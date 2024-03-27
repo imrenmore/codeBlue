@@ -115,6 +115,17 @@ class Snake implements GameObject {
         halfWayPoint = mr.x * ss / 2;
     }
 
+    // Overloaded reset method to reset with a custom length
+    void reset(int w, int h, int length) {
+        heading = Heading.RIGHT;
+        segmentLocations.clear();
+
+        // Start with a snake of the specified length
+        for (int i = 0; i < length; i++) {
+            segmentLocations.add(new Point(w / 2 - i, h / 2));
+        }
+    }
+
     // Get the snake ready for a new game
     void reset(int w, int h) {
 
@@ -164,6 +175,13 @@ class Snake implements GameObject {
                 break;
         }
 
+    }
+
+    // Overloaded move method to move multiple steps
+    void move(int steps) {
+        for (int i = 0; i < steps; i++) {
+            move(); // Calls the original move method
+        }
     }
 
     boolean detectDeath() {
@@ -265,6 +283,13 @@ class Snake implements GameObject {
         return segmentLocations.get(0);
     }
 
+    // Overloaded switchHeading method to change heading directly
+    void switchHeading(Heading newHeading) {
+        // Check if the new heading is not opposite to the current one
+        if (Math.abs(newHeading.ordinal() - heading.ordinal()) % 2 != 0) {
+            heading = newHeading;
+        }
+    }
 
     // Handle changing direction
     void switchHeading(MotionEvent motionEvent) {

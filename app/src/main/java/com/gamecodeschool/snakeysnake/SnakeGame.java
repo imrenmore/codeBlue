@@ -75,6 +75,12 @@ class SnakeGame extends SurfaceView implements Runnable{
     //An image to represent background
     private Bitmap mBitmapBackground;
 
+    // Overloaded constructor
+    public SnakeGame(Context context, Point size, int initialScore) {
+        this(context, size);  // Calls the existing constructor
+        mScore = initialScore;  // Sets the initial score
+    }
+
     // This is the constructor method that gets called
     // from com.gamecodeschool.snakeysnake.SnakeActivity
     public SnakeGame(Context context, Point size) {
@@ -140,6 +146,14 @@ class SnakeGame extends SurfaceView implements Runnable{
     }
 
 
+    // Overloaded newGame method with custom initial score
+    public void newGame(int initialScore) {
+        mSnake.reset(NUM_BLOCKS_WIDE, mNumBlocksHigh);
+        mApple.spawn();
+        mScore = initialScore;  // Sets the initial score
+        mNextFrameTime = System.currentTimeMillis();
+    }
+
     // Called to start a new game
     public void newGame() {
 
@@ -164,7 +178,8 @@ class SnakeGame extends SurfaceView implements Runnable{
             if(!mPaused) {
                 // Update 10 times a second
                 if (updateRequired()) {
-                    update();
+                    // can change the speed
+                    update(1);
                 }
             }
 
@@ -195,6 +210,33 @@ class SnakeGame extends SurfaceView implements Runnable{
         }
 
         return false;
+    }
+
+    // Overloaded update method with custom speed parameter
+    public void update(int speed) {
+        // Adjust the update logic based on the speed parameter
+        mSnake.move(speed);  // Assuming move can take speed as a parameter
+        // Did the head of the snake eat the apple?
+        if(mSnake.checkDinner(mApple.getLocation())){
+            // This reminds me of Edge of Tomorrow.
+            // One day the apple will be ready!
+            mApple.spawn();
+
+            // Add to  mScore
+            mScore = mScore + 1;
+
+            // Play a sound
+            mSP.play(mEat_ID, 1, 1, 0, 0, 1);
+        }
+
+        // Did the snake die?
+        if (mSnake.detectDeath()) {
+            // Pause the game ready to start again
+            mSP.play(mCrashID, 1, 1, 0, 0, 1);
+
+            mPaused =true;
+        }
+
     }
 
 
@@ -310,6 +352,13 @@ class SnakeGame extends SurfaceView implements Runnable{
         canvas.drawBitmap(pauseButtonBitmap, xStart, yStart, null);
     }
 
+    // Overloaded setFont method with font size
+    public void setFont(String fontFileName, int fontSize) {
+        Typeface typeface = Typeface.createFromAsset(getContext().getAssets(), "fonts/" + fontFileName);
+        mPaint.setTypeface(typeface);
+        mPaint.setTextSize(fontSize);  // Set the text size
+    }
+
     // function to set font
     public void setFont(String fontFileName) {
         Typeface typeface = Typeface.createFromAsset(getContext().getAssets(), "fonts/" + fontFileName);
@@ -325,6 +374,17 @@ class SnakeGame extends SurfaceView implements Runnable{
             mNextFrameTime = System.currentTimeMillis();
         }
     }
+
+    // Overloaded onTouchEvent to include different types of input handling
+    public boolean onTouchEvent(MotionEvent motionEvent, boolean specialCondition) {
+        if (specialCondition) {
+            // Handle touch event differently based on the special condition
+            return true;  // Return early if condition is met
+        }
+        // Continue with existing touch event handling
+        return onTouchEvent(motionEvent);
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
         int pauseButtonXStart = mSurfaceHolder.getSurfaceFrame().width() - 100; // Top-right corner for pause button

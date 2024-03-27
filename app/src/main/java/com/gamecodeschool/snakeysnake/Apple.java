@@ -48,6 +48,13 @@ class Apple implements GameObject {
         mBitmapApple = Bitmap.createScaledBitmap(mBitmapApple, s, s, false);
     }
 
+    // Overloaded spawn method to spawn within a specific range
+    void spawn(int minX, int maxX, int minY, int maxY) {
+        Random random = new Random();
+        location.x = random.nextInt(maxX - minX + 1) + minX;
+        location.y = random.nextInt(maxY - minY + 1) + minY;
+    }
+
     // This is called every time an apple is eaten
     void spawn(){
         // Choose two random values and place the apple
