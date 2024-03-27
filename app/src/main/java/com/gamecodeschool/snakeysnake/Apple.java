@@ -11,11 +11,6 @@ import com.gamecodeschool.snakeysnake.R;
 
 import java.util.Random;
 
-//Interfaces
-interface GameObject {
-    void draw(Canvas canvas, Paint paint);
-    Point getLocation();
-}
 
 class Apple implements GameObject {
 
@@ -74,6 +69,12 @@ class Apple implements GameObject {
     @Override
     public void draw(Canvas canvas, Paint paint) {
         canvas.drawBitmap(mBitmapApple, location.x * mSize, location.y * mSize, paint);
+    }
+
+    // Apple doesn't move like Snake, so an empty implementation
+    @Override
+    public void move() {
+        // No movement for Apple
     }
 
 }

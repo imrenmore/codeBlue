@@ -33,6 +33,13 @@ import com.gamecodeschool.snakeysnake.R;
 
 import java.io.IOException;
 
+//Interfaces
+interface GameObject {
+    void draw(Canvas canvas, Paint paint);
+    void move();
+    Point getLocation();
+}
+
 class SnakeGame extends SurfaceView implements Runnable{
 
     // Objects for the game loop/thread

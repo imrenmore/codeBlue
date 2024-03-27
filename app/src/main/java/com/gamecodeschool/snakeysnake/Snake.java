@@ -140,7 +140,8 @@ class Snake implements GameObject {
     }
 
 
-    void move() {
+    @Override
+    public void move() {
         // Move the body
         // Start at the back and move it
         // to the position of the segment in front of it
