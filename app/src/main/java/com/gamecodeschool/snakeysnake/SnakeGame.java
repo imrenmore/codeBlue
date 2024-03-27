@@ -1,5 +1,6 @@
 package com.gamecodeschool.snakeysnake;
 
+
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
@@ -11,9 +12,11 @@ import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Build;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
 
 // added these for pause button
 import android.graphics.Bitmap;
@@ -24,6 +27,7 @@ import android.graphics.Typeface;
 
 // added this for debug and errors
 import android.util.Log;
+
 
 import com.gamecodeschool.snakeysnake.R;
 
@@ -268,6 +272,17 @@ class SnakeGame extends SurfaceView implements Runnable{
 
             // Draw the pause button
             drawPauseButton(mCanvas);
+
+            // Draw the names in the top right corner
+            String name = "Kiranjot Kaur <3 Imren More";
+            mPaint.setTextSize(50);
+            float nameWidth = mPaint.measureText(name);
+            // Add 20 pixels gap from the pause button
+            int xStart = mCanvas.getWidth() - pauseButtonWidth - pauseButtonMargin - (int)nameWidth - 20;
+            // Adjust Y position to align with the pause button
+            int yStart = pauseButtonMargin + 50;
+            // Draw the names to the left of the pause button
+            mCanvas.drawText(name, xStart, yStart, mPaint);
 
             // Unlock the mCanvas and reveal the graphics for this frame
             mSurfaceHolder.unlockCanvasAndPost(mCanvas);
