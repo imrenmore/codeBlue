@@ -68,6 +68,8 @@ class SnakeGame extends SurfaceView implements Runnable{
     private final int pauseButtonHeight = 100;
     private final int pauseButtonMargin = 30;
 
+    //An image to represent background
+    private Bitmap mBitmapBackground;
 
     // This is the constructor method that gets called
     // from com.gamecodeschool.snakeysnake.SnakeActivity
@@ -228,8 +230,15 @@ class SnakeGame extends SurfaceView implements Runnable{
         if (mSurfaceHolder.getSurface().isValid()) {
             mCanvas = mSurfaceHolder.lockCanvas();
 
-            // Fill the screen with a color
-            mCanvas.drawColor(Color.argb(255, 26, 128, 182));
+            // Fill the screen with a background
+            mCanvas.drawColor(Color.WHITE);
+            //created a bitmap for background image to be drawn
+            Bitmap mBitmapBackground = BitmapFactory.decodeResource(getResources(), R.drawable.background);
+            mBitmapBackground = Bitmap.createScaledBitmap(mBitmapBackground, 2500, 1200, false);
+            mCanvas.drawBitmap(mBitmapBackground, 0,0, null);
+
+
+
 
             // Set the size and color of the mPaint for the text
             mPaint.setColor(Color.argb(255, 255, 255, 255));
