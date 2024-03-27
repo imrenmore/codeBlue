@@ -257,7 +257,6 @@ class SnakeGame extends SurfaceView implements Runnable{
 
             // Draw some text while paused
             if(mPaused){
-
                 // Set the size and color of the mPaint for the text
                 mPaint.setColor(Color.argb(255, 255, 255, 255));
                 mPaint.setTextSize(250);
@@ -265,6 +264,18 @@ class SnakeGame extends SurfaceView implements Runnable{
                 // Draw the message
                 // We will give this an international upgrade soon
                 //mCanvas.drawText("Tap To Play!", 200, 700, mPaint);
+
+                //For the text outline
+                Paint outlinePaint = new Paint(mPaint); // Clones the original paint
+                outlinePaint.setColor(Color.BLACK); // Sets the outline color
+                outlinePaint.setStyle(Paint.Style.STROKE); // Sets the style to stroke
+                outlinePaint.setStrokeWidth(8); // Sets the width of the outline
+
+                // Draws the text outline
+                String tapToPlayText = getResources().getString(R.string.tap_to_play);
+                mCanvas.drawText(tapToPlayText, 200, 700, outlinePaint);
+
+                // Draw the main text
                 mCanvas.drawText(getResources().
                                 getString(R.string.tap_to_play),
                         200, 700, mPaint);
