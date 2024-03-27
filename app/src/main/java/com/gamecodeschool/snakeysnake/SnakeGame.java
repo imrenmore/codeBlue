@@ -19,6 +19,12 @@ import android.view.SurfaceView;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+// added this for font
+import android.graphics.Typeface;
+
+// added this for debug and errors
+import android.util.Log;
+
 import com.gamecodeschool.snakeysnake.R;
 
 import java.io.IOException;
@@ -68,6 +74,13 @@ class SnakeGame extends SurfaceView implements Runnable{
     public SnakeGame(Context context, Point size) {
         super(context);
 
+        // Initializes the drawing objects
+        mSurfaceHolder = getHolder();
+        mPaint = new Paint();
+
+        // Loads and sets the custom font
+        setFont("Catfiles.otf");
+
         // Work out how many pixels each block is
         int blockSize = size.x / NUM_BLOCKS_WIDE;
         // How many blocks of the same size will fit into the height
@@ -104,11 +117,8 @@ class SnakeGame extends SurfaceView implements Runnable{
 
         } catch (IOException e) {
             // Error
+            Log.e("SnakeGame", "Error loading sound files", e);
         }
-
-        // Initialize the drawing objects
-        mSurfaceHolder = getHolder();
-        mPaint = new Paint();
 
         // Call the constructors of our two game objects
         mApple = new com.gamecodeschool.snakeysnake.Apple(context,
@@ -265,6 +275,11 @@ class SnakeGame extends SurfaceView implements Runnable{
         canvas.drawBitmap(pauseButtonBitmap, xStart, yStart, null);
     }
 
+    // function to set font
+    public void setFont(String fontFileName) {
+        Typeface typeface = Typeface.createFromAsset(getContext().getAssets(), "fonts/" + fontFileName);
+        mPaint.setTypeface(typeface);
+    }
 
     private void togglePause() {
         // If the game is paused, resume it, otherwise pause it
