@@ -13,7 +13,7 @@ import com.gamecodeschool.snakeysnake.R;
 
 import java.util.ArrayList;
 
-class Snake {
+class Snake implements GameObject {
 
     // The location in the grid of all the segments
     private ArrayList<Point> segmentLocations;
@@ -207,7 +207,8 @@ class Snake {
         return false;
     }
 
-    void draw(Canvas canvas, Paint paint) {
+    @Override
+    public void draw(Canvas canvas, Paint paint) {
 
         // Don't run this code if ArrayList has nothing in it
         if (!segmentLocations.isEmpty()) {
@@ -256,6 +257,12 @@ class Snake {
                                 * mSegmentSize, paint);
             }
         }
+    }
+
+    @Override
+    public Point getLocation() {
+        // Return the location of the snake head
+        return segmentLocations.get(0);
     }
 
 

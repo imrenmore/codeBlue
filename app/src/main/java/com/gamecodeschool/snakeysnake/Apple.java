@@ -11,7 +11,13 @@ import com.gamecodeschool.snakeysnake.R;
 
 import java.util.Random;
 
-class Apple {
+//Interfaces
+interface GameObject {
+    void draw(Canvas canvas, Paint paint);
+    Point getLocation();
+}
+
+class Apple implements GameObject {
 
     // The location of the apple on the grid
     // Not in pixels
@@ -52,15 +58,15 @@ class Apple {
 
     // Let SnakeGame know where the apple is
     // SnakeGame can share this with the snake
-    Point getLocation(){
+    @Override
+    public Point getLocation() {
         return location;
     }
 
     // Draw the apple
-    void draw(Canvas canvas, Paint paint){
-        canvas.drawBitmap(mBitmapApple,
-                location.x * mSize, location.y * mSize, paint);
-
+    @Override
+    public void draw(Canvas canvas, Paint paint) {
+        canvas.drawBitmap(mBitmapApple, location.x * mSize, location.y * mSize, paint);
     }
 
 }
