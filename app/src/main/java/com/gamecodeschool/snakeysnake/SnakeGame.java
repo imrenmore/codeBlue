@@ -15,6 +15,10 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+// added these for pause button
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
 import com.gamecodeschool.snakeysnake.R;
 
 import java.io.IOException;
@@ -51,6 +55,13 @@ class SnakeGame extends SurfaceView implements Runnable{
     // And an apple
     private com.gamecodeschool.snakeysnake.Apple mApple;
 
+    private Bitmap pauseButtonBitmap;
+
+    // Constants for the pause button
+    private final int pauseButtonWidth = 100;
+    private final int pauseButtonHeight = 100;
+    private final int pauseButtonMargin = 30;
+
 
     // This is the constructor method that gets called
     // from com.gamecodeschool.snakeysnake.SnakeActivity
@@ -61,6 +72,10 @@ class SnakeGame extends SurfaceView implements Runnable{
         int blockSize = size.x / NUM_BLOCKS_WIDE;
         // How many blocks of the same size will fit into the height
         mNumBlocksHigh = size.y / blockSize;
+
+        // for pause button
+        pauseButtonBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.pause_button);
+        pauseButtonBitmap = Bitmap.createScaledBitmap(pauseButtonBitmap, pauseButtonWidth, pauseButtonHeight, false);
 
         // Initialize the SoundPool
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -232,17 +247,47 @@ class SnakeGame extends SurfaceView implements Runnable{
                         200, 700, mPaint);
             }
 
+            // Draw the pause button
+            drawPauseButton(mCanvas);
 
             // Unlock the mCanvas and reveal the graphics for this frame
             mSurfaceHolder.unlockCanvasAndPost(mCanvas);
         }
     }
 
+    // function to draw pause button
+    private void drawPauseButton(Canvas canvas) {
+        // Calculate the position of the pause button
+        int xStart = canvas.getWidth() - pauseButtonWidth - pauseButtonMargin;
+        int yStart = pauseButtonMargin;
+
+        // Draw the pause button bitmap
+        canvas.drawBitmap(pauseButtonBitmap, xStart, yStart, null);
+    }
+
+
+    private void togglePause() {
+        // If the game is paused, resume it, otherwise pause it
+        mPaused = !mPaused;
+
+        // If resuming, reset the next frame time to avoid instant update
+        if (!mPaused) {
+            mNextFrameTime = System.currentTimeMillis();
+        }
+    }
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
+        int pauseButtonXStart = mSurfaceHolder.getSurfaceFrame().width() - 100; // Top-right corner for pause button
+        int pauseButtonYStart = 0; // Top of the screen
+        int pauseButtonYEnd = 100; // Height of the pause button
+
         switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_UP:
-                if (mPaused) {
+                if (motionEvent.getX() >= pauseButtonXStart && motionEvent.getY() >= pauseButtonYStart && motionEvent.getY() <= pauseButtonYEnd) {
+                    // Toggle pause if the pause button area is tapped
+                    togglePause();
+                    return true;
+                } else if (mPaused) {
                     mPaused = false;
                     newGame();
 
@@ -251,7 +296,9 @@ class SnakeGame extends SurfaceView implements Runnable{
                 }
 
                 // Let the com.gamecodeschool.snakeysnake.Snake class handle the input
-                mSnake.switchHeading(motionEvent);
+                if (!mPaused) {
+                    mSnake.switchHeading(motionEvent);
+                }
                 break;
 
             default:
