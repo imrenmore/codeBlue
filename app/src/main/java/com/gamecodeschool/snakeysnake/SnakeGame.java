@@ -352,15 +352,22 @@ class SnakeGame extends SurfaceView implements Runnable {
     // Displays a "Paused" message overlay when the game is paused
     private void drawPausedText() {
         Paint outlinePaint = new Paint(mPaint);
-        outlinePaint.setColor(Color.BLACK);
-        outlinePaint.setStyle(Paint.Style.STROKE);
-        outlinePaint.setStrokeWidth(8);
+        outlinePaint.setColor(Color.BLACK); // Outline color
+        outlinePaint.setStyle(Paint.Style.STROKE); // Outline style
+        outlinePaint.setStrokeWidth(8); // Outline width
 
         String tapToPlayText = getResources().getString(R.string.tap_to_play);
+
         mPaint.setTextSize(250);
+        outlinePaint.setTextSize(250);
+
+        // Draws the outline first
         mCanvas.drawText(tapToPlayText, 200, 700, outlinePaint);
+
+        // Draws the main text, exactly over the outline
         mCanvas.drawText(tapToPlayText, 200, 700, mPaint);
     }
+
 
     // Draws the name text on the screen
     private void drawNames(String name) {
