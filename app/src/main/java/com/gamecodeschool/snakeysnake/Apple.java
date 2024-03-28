@@ -11,7 +11,7 @@ import android.graphics.Point;
 import java.util.Random;
 
 
-class Apple extends GameEntity {
+class Apple extends MainObject {
 
     // The location of the apple on the grid
     // Not in pixels

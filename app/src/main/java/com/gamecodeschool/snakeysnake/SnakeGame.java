@@ -308,97 +308,74 @@ class SnakeGame extends SurfaceView implements Runnable {
 
     }
 
-
-
     // Do all the drawing
     public void draw() {
-        // Get a lock on the mCanvas
+        // Check if the surface is valid before drawing
         if (mSurfaceHolder.getSurface().isValid()) {
+            // Lock the canvas for drawing
             mCanvas = mSurfaceHolder.lockCanvas();
-            //Draws background
-            background.draw(mCanvas);
 
-            // Set the size and color of the mPaint for the text
-            mPaint.setColor(Color.argb(255, 255, 255, 255));
-            mPaint.setTextSize(120);
-
-            // Draw the score
-            mCanvas.drawText("" + mScore, 20, 120, mPaint);
-
-            // Draw the apple and the snake
+            // Draw the game's background
+            drawBackground();
+            // Draw the current score
+            drawScore();
+            // Draw the apple and snake
             mApple.draw(mCanvas, mPaint);
             mSnake.draw(mCanvas, mPaint);
 
-            // Draw some text while paused
-            if(mPaused){
-                // Set the size and color of the mPaint for the text
-                mPaint.setColor(Color.argb(255, 255, 255, 255));
-                mPaint.setTextSize(250);
-
-                // Draw the message
-                // We will give this an international upgrade soon
-                //mCanvas.drawText("Tap To Play!", 200, 700, mPaint);
-
-                //For the text outline
-                Paint outlinePaint = new Paint(mPaint); // Clones the original paint
-                outlinePaint.setColor(Color.BLACK); // Sets the outline color
-                outlinePaint.setStyle(Paint.Style.STROKE); // Sets the style to stroke
-                outlinePaint.setStrokeWidth(8); // Sets the width of the outline
-
-                // Draws the text outline
-                String tapToPlayText = getResources().getString(R.string.tap_to_play);
-                mCanvas.drawText(tapToPlayText, 200, 700, outlinePaint);
-
-                // Draw the main text
-                mCanvas.drawText(getResources().
-                                getString(R.string.tap_to_play),
-                        200, 700, mPaint);
+            // If the game is paused, draw the paused text overlay
+            if (mPaused) {
+                drawPausedText();
             }
 
+            // Draw the pause button and the name text on the screen
+            drawPauseButton();
+            drawNames("Kiranjot Kaur <3 Imren More");
 
-            class Names {
-                private String name;
-                private Paint mPaint;
-                private Canvas mCanvas;
-                private int pauseButtonWidth;
-                private int pauseButtonMargin;
-
-                public Names(String name, Paint mPaint, Canvas mCanvas, int pauseButtonWidth, int pauseButtonMargin) {
-                    this.name = name;
-                    this.mPaint = mPaint;
-                    this.mCanvas = mCanvas;
-                    this.pauseButtonWidth = pauseButtonWidth;
-                    this.pauseButtonMargin = pauseButtonMargin;
-                }
-
-                public void drawName() {
-                    mPaint.setTextSize(50);
-                    float nameWidth = mPaint.measureText(name);
-                    int xStart = mCanvas.getWidth() - pauseButtonWidth - pauseButtonMargin - (int)nameWidth - 20;
-                    int yStart = pauseButtonMargin + 50;
-                    mCanvas.drawText(name, xStart, yStart, mPaint);
-                }
-            }
-
-            // Draw the pause button
-            drawPauseButton(mCanvas);
-
-            // Draw the names in the top right corner
-            Names names = new Names("Kiranjot Kaur <3 Imren More", mPaint, mCanvas, pauseButtonWidth, pauseButtonMargin);
-            names.drawName();
-            // Unlock the mCanvas and reveal the graphics for this frame
+            // Unlock the canvas and post the drawing to the screen
             mSurfaceHolder.unlockCanvasAndPost(mCanvas);
         }
     }
 
-    // function to draw pause button
-    private void drawPauseButton(Canvas canvas) {
-        // Calculate the position of the pause button
-        int xStart = canvas.getWidth() - pauseButtonWidth - pauseButtonMargin;
-        int yStart = pauseButtonMargin;
+    // Draws the background image
+    private void drawBackground() {
+        background.draw(mCanvas);
+    }
 
-        // Draw the pause button bitmap
-        canvas.drawBitmap(pauseButtonBitmap, xStart, yStart, null);
+    // Renders the current score on the screen
+    private void drawScore() {
+        mPaint.setColor(Color.argb(255, 255, 255, 255));
+        mPaint.setTextSize(120);
+        mCanvas.drawText("" + mScore, 20, 120, mPaint);
+    }
+
+    // Displays a "Paused" message overlay when the game is paused
+    private void drawPausedText() {
+        Paint outlinePaint = new Paint(mPaint);
+        outlinePaint.setColor(Color.BLACK);
+        outlinePaint.setStyle(Paint.Style.STROKE);
+        outlinePaint.setStrokeWidth(8);
+
+        String tapToPlayText = getResources().getString(R.string.tap_to_play);
+        mPaint.setTextSize(250);
+        mCanvas.drawText(tapToPlayText, 200, 700, outlinePaint);
+        mCanvas.drawText(tapToPlayText, 200, 700, mPaint);
+    }
+
+    // Draws the name text on the screen
+    private void drawNames(String name) {
+        mPaint.setTextSize(50);
+        float nameWidth = mPaint.measureText(name);
+        int xStart = mCanvas.getWidth() - pauseButtonWidth - pauseButtonMargin - (int) nameWidth - 20;
+        int yStart = pauseButtonMargin + 50;
+        mCanvas.drawText(name, xStart, yStart, mPaint);
+    }
+
+    // Renders the pause button in the top-right corner
+    private void drawPauseButton() {
+        int xStart = mCanvas.getWidth() - pauseButtonWidth - pauseButtonMargin;
+        int yStart = pauseButtonMargin;
+        mCanvas.drawBitmap(pauseButtonBitmap, xStart, yStart, null);
     }
 
     // Overloaded setFont method with font size

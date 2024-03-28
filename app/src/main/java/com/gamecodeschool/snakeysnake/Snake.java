@@ -12,7 +12,7 @@ import android.view.MotionEvent;
 
 import java.util.ArrayList;
 
-abstract class GameEntity implements GameObject {
+abstract class MainObject implements GameObject, Movable, Drawable {
     protected Point location;
     protected Bitmap bitmap;
 
@@ -32,7 +32,7 @@ abstract class GameEntity implements GameObject {
     }
 }
 
-class Snake extends GameEntity {
+class Snake extends MainObject {
 
     // The location in the grid of all the segments
     private final ArrayList<Point> segmentLocations;
