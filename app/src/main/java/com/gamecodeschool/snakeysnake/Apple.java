@@ -1,13 +1,12 @@
 package com.gamecodeschool.snakeysnake;
 
+import com.gamecodeschool.snakeysnake.SnakeGame;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
-
-import com.gamecodeschool.snakeysnake.R;
 
 import java.util.Random;
 
@@ -27,15 +26,17 @@ class Apple implements GameObject {
     private Bitmap mBitmapApple;
 
     /// Set up the apple in the constructor
-    Apple(Context context, Point sr, int s){
+    Apple(Context context, Point sr, int s) {
 
         // Make a note of the passed in spawn range
-        mSpawnRange = sr;
+        this.mSpawnRange = sr;
         // Make a note of the size of an apple
-        mSize = s;
+        this.mSize = s;
         // Hide the apple off-screen until the game starts
-        location.x = -10;
-
+        this.location.x = -10;
+        intializeBitmap(context, s);
+    }
+        private void intializeBitmap(Context context, int s) {
         // Load the image to the bitmap
         mBitmapApple = BitmapFactory.decodeResource(context.getResources(), R.drawable.apple);
 
@@ -44,14 +45,17 @@ class Apple implements GameObject {
     }
 
     // Overloaded spawn method to spawn within a specific range
-    void spawn(int minX, int maxX, int minY, int maxY) {
+
+
+    // Overloaded spawn method to spawn within a specific range
+     public void spawn(int minX, int maxX, int minY, int maxY) {
         Random random = new Random();
         location.x = random.nextInt(maxX - minX + 1) + minX;
         location.y = random.nextInt(maxY - minY + 1) + minY;
     }
 
     // This is called every time an apple is eaten
-    void spawn(){
+    public void spawn(){
         // Choose two random values and place the apple
         Random random = new Random();
         location.x = random.nextInt(mSpawnRange.x) + 1;
@@ -63,6 +67,10 @@ class Apple implements GameObject {
     @Override
     public Point getLocation() {
         return location;
+    }
+
+    public void setLocation(Point location){
+        this.location = location;
     }
 
     // Draw the apple

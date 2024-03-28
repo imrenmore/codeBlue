@@ -12,7 +12,6 @@ import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Build;
-import android.view.Display;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -29,7 +28,6 @@ import android.graphics.Typeface;
 import android.util.Log;
 
 
-import com.gamecodeschool.snakeysnake.R;
 
 import java.io.IOException;
 
@@ -40,7 +38,7 @@ interface GameObject {
     Point getLocation();
 }
 
-class SnakeGame extends SurfaceView implements Runnable{
+class SnakeGame extends SurfaceView implements Runnable {
 
     // Objects for the game loop/thread
     private Thread mThread = null;
@@ -56,7 +54,7 @@ class SnakeGame extends SurfaceView implements Runnable{
     private int mCrashID = -1;
 
     // The size in segments of the playable area
-    private final int NUM_BLOCKS_WIDE = 40;
+    private static int NUM_BLOCKS_WIDE = 40;
     private int mNumBlocksHigh;
 
     // How many points does the player have
@@ -82,6 +80,30 @@ class SnakeGame extends SurfaceView implements Runnable{
     //An image to represent background
     private Bitmap mBitmapBackground;
 
+    // Run at 10 frames per second
+    private final long TARGET_FPS = 10;
+
+    // There are 1000 milliseconds in a second
+    private final long MILLIS_PER_SECOND = 1000;
+    private Background background;
+
+
+    public class Background {
+        private Bitmap mBitmapBackground;
+        int width = 2500;
+        int height = 1200;
+        public Background(Context context) {
+            mBitmapBackground = BitmapFactory.decodeResource(getResources(), R.drawable.background);
+            mBitmapBackground = Bitmap.createScaledBitmap(mBitmapBackground, width, height ,false);
+        }
+
+        public void draw(Canvas canvas){
+            canvas.drawBitmap(mBitmapBackground, 0,0, null);
+        }
+    }
+
+
+
     // Overloaded constructor
     public SnakeGame(Context context, Point size, int initialScore) {
         this(context, size);  // Calls the existing constructor
@@ -90,12 +112,13 @@ class SnakeGame extends SurfaceView implements Runnable{
 
     // This is the constructor method that gets called
     // from com.gamecodeschool.snakeysnake.SnakeActivity
-    public SnakeGame(Context context, Point size) {
+    public SnakeGame(Context context, Point size)  {
         super(context);
 
         // Initializes the drawing objects
         mSurfaceHolder = getHolder();
         mPaint = new Paint();
+        background = new Background(context);
 
         // Loads and sets the custom font
         setFont("Catfiles.otf");
@@ -197,12 +220,6 @@ class SnakeGame extends SurfaceView implements Runnable{
 
     // Check to see if it is time for an update
     public boolean updateRequired() {
-
-        // Run at 10 frames per second
-        final long TARGET_FPS = 10;
-        // There are 1000 milliseconds in a second
-        final long MILLIS_PER_SECOND = 1000;
-
         // Are we due to update the frame
         if(mNextFrameTime <= System.currentTimeMillis()){
             // Tenth of a second has passed
@@ -276,22 +293,20 @@ class SnakeGame extends SurfaceView implements Runnable{
 
     }
 
+    interface Drawable{
+        void draw(Canvas canvas, Paint paint);
+        int getWidth();
+        int getHeight();
+        boolean containsPoint(Point point);
+    }
 
     // Do all the drawing
     public void draw() {
         // Get a lock on the mCanvas
         if (mSurfaceHolder.getSurface().isValid()) {
             mCanvas = mSurfaceHolder.lockCanvas();
-
-            // Fill the screen with a background
-            mCanvas.drawColor(Color.WHITE);
-            //created a bitmap for background image to be drawn
-            Bitmap mBitmapBackground = BitmapFactory.decodeResource(getResources(), R.drawable.background);
-            mBitmapBackground = Bitmap.createScaledBitmap(mBitmapBackground, 2500, 1200, false);
-            mCanvas.drawBitmap(mBitmapBackground, 0,0, null);
-
-
-
+            //Draws background
+            background.draw(mCanvas);
 
             // Set the size and color of the mPaint for the text
             mPaint.setColor(Color.argb(255, 255, 255, 255));
@@ -330,20 +345,37 @@ class SnakeGame extends SurfaceView implements Runnable{
                         200, 700, mPaint);
             }
 
+
+            class Names {
+                private String name;
+                private Paint mPaint;
+                private Canvas mCanvas;
+                private int pauseButtonWidth;
+                private int pauseButtonMargin;
+
+                public Names(String name, Paint mPaint, Canvas mCanvas, int pauseButtonWidth, int pauseButtonMargin) {
+                    this.name = name;
+                    this.mPaint = mPaint;
+                    this.mCanvas = mCanvas;
+                    this.pauseButtonWidth = pauseButtonWidth;
+                    this.pauseButtonMargin = pauseButtonMargin;
+                }
+
+                public void drawName() {
+                    mPaint.setTextSize(50);
+                    float nameWidth = mPaint.measureText(name);
+                    int xStart = mCanvas.getWidth() - pauseButtonWidth - pauseButtonMargin - (int)nameWidth - 20;
+                    int yStart = pauseButtonMargin + 50;
+                    mCanvas.drawText(name, xStart, yStart, mPaint);
+                }
+            }
+
             // Draw the pause button
             drawPauseButton(mCanvas);
 
             // Draw the names in the top right corner
-            String name = "Kiranjot Kaur <3 Imren More";
-            mPaint.setTextSize(50);
-            float nameWidth = mPaint.measureText(name);
-            // Add 20 pixels gap from the pause button
-            int xStart = mCanvas.getWidth() - pauseButtonWidth - pauseButtonMargin - (int)nameWidth - 20;
-            // Adjust Y position to align with the pause button
-            int yStart = pauseButtonMargin + 50;
-            // Draw the names to the left of the pause button
-            mCanvas.drawText(name, xStart, yStart, mPaint);
-
+            Names names = new Names("Kiranjot Kaur <3 Imren More", mPaint, mCanvas, pauseButtonWidth, pauseButtonMargin);
+            names.drawName();
             // Unlock the mCanvas and reveal the graphics for this frame
             mSurfaceHolder.unlockCanvasAndPost(mCanvas);
         }

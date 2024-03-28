@@ -1,5 +1,6 @@
 package com.gamecodeschool.snakeysnake;
 
+import com.gamecodeschool.snakeysnake.SnakeGame;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,11 +10,10 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.view.MotionEvent;
 
-import com.gamecodeschool.snakeysnake.R;
 
 import java.util.ArrayList;
 
-class Snake implements GameObject {
+class Snake implements GameObject, SnakeGame.Drawable {
 
     // The location in the grid of all the segments
     private ArrayList<Point> segmentLocations;
@@ -27,6 +27,8 @@ class Snake implements GameObject {
     // Where is the centre of the screen
     // horizontally in pixels?
     private int halfWayPoint;
+    private int w;
+    private int h;
 
     // For tracking movement Heading
     private enum Heading {
@@ -46,7 +48,7 @@ class Snake implements GameObject {
     private Bitmap mBitmapBody;
 
 
-    Snake(Context context, Point mr, int ss) {
+    public Snake(Context context, Point mr, int ss) {
 
         // Initialize our ArrayList
         segmentLocations = new ArrayList<>();
@@ -127,7 +129,21 @@ class Snake implements GameObject {
     }
 
     // Get the snake ready for a new game
+
+    public void setW(int w) {
+        this.w = w;
+    }
+    public int getW(){
+        return w;
+    }
+    public void setH(int h){
+        this.h = h;
+    }
+    public int getH(){
+        return h;
+    }
     void reset(int w, int h) {
+
 
         // Reset the heading
         heading = Heading.RIGHT;
@@ -187,24 +203,20 @@ class Snake implements GameObject {
 
     boolean detectDeath() {
         // Has the snake died?
-        boolean dead = false;
-
-        // Hit any of the screen edges
-        if (segmentLocations.get(0).x == -1 ||
+        boolean dead = segmentLocations.get(0).x == -1 ||
                 segmentLocations.get(0).x > mMoveRange.x ||
                 segmentLocations.get(0).y == -1 ||
-                segmentLocations.get(0).y > mMoveRange.y) {
+                segmentLocations.get(0).y > mMoveRange.y;
 
-            dead = true;
-        }
+        // Hit any of the screen edges
 
         // Eaten itself?
         for (int i = segmentLocations.size() - 1; i > 0; i--) {
             // Have any of the sections collided with the head
             if (segmentLocations.get(0).x == segmentLocations.get(i).x &&
                     segmentLocations.get(0).y == segmentLocations.get(i).y) {
-
                 dead = true;
+                break;
             }
         }
         return dead;
@@ -276,6 +288,21 @@ class Snake implements GameObject {
                                 * mSegmentSize, paint);
             }
         }
+    }
+
+    @Override
+    public int getWidth() {
+        return 0;
+    }
+
+    @Override
+    public int getHeight() {
+        return 0;
+    }
+
+    @Override
+    public boolean containsPoint(Point point) {
+        return false;
     }
 
     @Override
