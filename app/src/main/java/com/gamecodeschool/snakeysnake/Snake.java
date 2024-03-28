@@ -13,20 +13,24 @@ import android.view.MotionEvent;
 
 import java.util.ArrayList;
 
-class Snake implements GameObject, SnakeGame.Drawable {
+
+interface Movable{
+    void move();
+}
+class Snake implements GameObject, SnakeGame.Drawable, Movable {
 
     // The location in the grid of all the segments
-    private ArrayList<Point> segmentLocations;
+    private final ArrayList<Point> segmentLocations;
 
     // How big is each segment of the snake?
-    private int mSegmentSize;
+    private final int mSegmentSize;
 
     // How big is the entire grid
-    private Point mMoveRange;
+    private final Point mMoveRange;
 
     // Where is the centre of the screen
     // horizontally in pixels?
-    private int halfWayPoint;
+    private final int halfWayPoint;
     private int w;
     private int h;
 
@@ -48,15 +52,15 @@ class Snake implements GameObject, SnakeGame.Drawable {
     private Bitmap mBitmapBody;
 
 
-    public Snake(Context context, Point mr, int ss) {
+     Snake(Context context, Point mr, int ss) {
 
         // Initialize our ArrayList
-        segmentLocations = new ArrayList<>();
+        this.segmentLocations = new ArrayList<>();
 
         // Initialize the segment size and movement
         // range from the passed in parameters
-        mSegmentSize = ss;
-        mMoveRange = mr;
+        this.mSegmentSize = ss;
+        this.mMoveRange = mr;
 
         // Create and scale the bitmaps
         mBitmapHeadRight = BitmapFactory

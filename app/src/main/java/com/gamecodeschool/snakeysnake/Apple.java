@@ -11,7 +11,7 @@ import android.graphics.Point;
 import java.util.Random;
 
 
-class Apple implements GameObject {
+class Apple implements GameObject, Movable {
 
     // The location of the apple on the grid
     // Not in pixels
@@ -19,21 +19,20 @@ class Apple implements GameObject {
 
     // The range of values we can choose from
     // to spawn an apple
-    private Point mSpawnRange;
-    private int mSize;
+    private final Point mSpawnRange;
+    private final int mSize;
 
     // An image to represent the apple
     private Bitmap mBitmapApple;
 
-    /// Set up the apple in the constructor
+    // Set up the apple in the constructor
     Apple(Context context, Point sr, int s) {
-
         // Make a note of the passed in spawn range
         this.mSpawnRange = sr;
         // Make a note of the size of an apple
         this.mSize = s;
         // Hide the apple off-screen until the game starts
-        this.location.x = -10;
+        location.x = -10;
         intializeBitmap(context, s);
     }
         private void intializeBitmap(Context context, int s) {
