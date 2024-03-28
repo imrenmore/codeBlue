@@ -116,65 +116,72 @@ class SnakeGame extends SurfaceView implements Runnable {
         super(context);
 
         // Initializes the drawing objects
-        mSurfaceHolder = getHolder();
-        mPaint = new Paint();
+        initializeDrawingTools();
         background = new Background(context);
-
         // Loads and sets the custom font
         setFont("Catfiles.otf");
 
-        // Work out how many pixels each block is
-        int blockSize = size.x / NUM_BLOCKS_WIDE;
-        // How many blocks of the same size will fit into the height
-        mNumBlocksHigh = size.y / blockSize;
-
-        // for pause button
-        pauseButtonBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.pause_button);
-        pauseButtonBitmap = Bitmap.createScaledBitmap(pauseButtonBitmap, pauseButtonWidth, pauseButtonHeight, false);
-
-        // Initialize the SoundPool
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            AudioAttributes audioAttributes = new AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .build();
-
-            mSP = new SoundPool.Builder()
-                    .setMaxStreams(5)
-                    .setAudioAttributes(audioAttributes)
-                    .build();
-        } else {
-            mSP = new SoundPool(5, AudioManager.STREAM_MUSIC, 0);
-        }
-        try {
-            AssetManager assetManager = context.getAssets();
-            AssetFileDescriptor descriptor;
-
-            // Prepare the sounds in memory
-            descriptor = assetManager.openFd("get_apple.ogg");
-            mEat_ID = mSP.load(descriptor, 0);
-
-            descriptor = assetManager.openFd("snake_death.ogg");
-            mCrashID = mSP.load(descriptor, 0);
-
-        } catch (IOException e) {
-            // Error
-            Log.e("SnakeGame", "Error loading sound files", e);
-        }
-
-        // Call the constructors of our two game objects
-        mApple = new com.gamecodeschool.snakeysnake.Apple(context,
-                new Point(NUM_BLOCKS_WIDE,
-                        mNumBlocksHigh),
-                blockSize);
-
-        mSnake = new com.gamecodeschool.snakeysnake.Snake(context,
-                new Point(NUM_BLOCKS_WIDE,
-                        mNumBlocksHigh),
-                blockSize);
-
+        // Calculates the size of each block based on the screen size
+        int blockSize = calculateBlockSize(size);
+        // Initializes game entities - Snake and Apple
+        initializeGameObjects(context, blockSize);
+        // Sets up the sound engine for the game
+        initializeSoundPool(context);
     }
 
+    private void initializeDrawingTools() {
+        // Gets the holder for the canvas and initializes the Paint object for drawing
+        mSurfaceHolder = getHolder();
+        mPaint = new Paint();
+    }
+
+    private int calculateBlockSize(Point size) {
+        // Work out how many pixels each block is and how many blocks fit into the height
+        int blockSize = size.x / NUM_BLOCKS_WIDE;
+        mNumBlocksHigh = size.y / blockSize;
+        return blockSize;
+    }
+
+    private void initializeGameObjects(Context context, int blockSize) {
+        // Loads the pause button graphic and initializes the Apple and Snake objects
+        pauseButtonBitmap = loadScaledBitmap(context, R.drawable.pause_button, pauseButtonWidth, pauseButtonHeight);
+
+        // Initialize game objects
+        mApple = new Apple(context, new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize);
+        mSnake = new Snake(context, new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize);
+    }
+
+    private Bitmap loadScaledBitmap(Context context, int resId, int width, int height) {
+        // Loads a bitmap from resources and scales it to the specified width and height
+        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), resId);
+        return Bitmap.createScaledBitmap(bitmap, width, height, false);
+    }
+
+    private void initializeSoundPool(Context context) {
+        // Sets up the SoundPool for playing sound effects with its audio attributes
+        AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build();
+
+        mSP = new SoundPool.Builder()
+                .setMaxStreams(5)
+                .setAudioAttributes(audioAttributes)
+                .build();
+
+        // Loads sound files into the SoundPool
+        loadSounds(context);
+    }
+
+    private void loadSounds(Context context) {
+        try {
+            AssetManager assetManager = context.getAssets();
+            mEat_ID = mSP.load(assetManager.openFd("get_apple.ogg"), 0);
+            mCrashID = mSP.load(assetManager.openFd("snake_death.ogg"), 0);
+        } catch (IOException e) {
+            Log.e("SnakeGame", "Error loading sound files", e);
+        }
+    }
 
     // Overloaded newGame method with custom initial score
     public void newGame(int initialScore) {
@@ -262,7 +269,6 @@ class SnakeGame extends SurfaceView implements Runnable {
         }
 
     }
-
 
     // Update all the game objects
     public void update() {
