@@ -11,7 +11,7 @@ import android.graphics.Point;
 import java.util.Random;
 
 
-class Apple implements GameObject, Movable {
+class Apple extends GameEntity {
 
     // The location of the apple on the grid
     // Not in pixels
@@ -76,6 +76,21 @@ class Apple implements GameObject, Movable {
     @Override
     public void draw(Canvas canvas, Paint paint) {
         canvas.drawBitmap(mBitmapApple, location.x * mSize, location.y * mSize, paint);
+    }
+
+    @Override
+    public int getWidth() {
+        return 0;
+    }
+
+    @Override
+    public int getHeight() {
+        return 0;
+    }
+
+    @Override
+    public boolean containsPoint(Point point) {
+        return false;
     }
 
     // Apple doesn't move like Snake, so an empty implementation

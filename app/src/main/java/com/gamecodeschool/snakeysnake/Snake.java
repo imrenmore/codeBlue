@@ -1,6 +1,5 @@
 package com.gamecodeschool.snakeysnake;
 
-import com.gamecodeschool.snakeysnake.SnakeGame;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,11 +12,27 @@ import android.view.MotionEvent;
 
 import java.util.ArrayList;
 
+abstract class GameEntity implements GameObject {
+    protected Point location;
+    protected Bitmap bitmap;
 
-interface Movable{
-    void move();
+    @Override
+    public void draw(Canvas canvas, Paint paint) {
+        if (bitmap != null && location != null) {
+            canvas.drawBitmap(bitmap, location.x, location.y, paint);
+        }
+    }
+
+    @Override
+    public abstract void move();
+
+    @Override
+    public Point getLocation() {
+        return location;
+    }
 }
-class Snake implements GameObject, SnakeGame.Drawable, Movable {
+
+class Snake extends GameEntity {
 
     // The location in the grid of all the segments
     private final ArrayList<Point> segmentLocations;

@@ -32,10 +32,19 @@ import android.util.Log;
 import java.io.IOException;
 
 //Interfaces
-interface GameObject {
-    void draw(Canvas canvas, Paint paint);
-    void move();
+interface GameObject extends Drawable, Movable {
     Point getLocation();
+}
+
+interface Movable {
+    void move();
+}
+
+interface Drawable{
+    void draw(Canvas canvas, Paint paint);
+    int getWidth();
+    int getHeight();
+    boolean containsPoint(Point point);
 }
 
 class SnakeGame extends SurfaceView implements Runnable {
@@ -299,12 +308,7 @@ class SnakeGame extends SurfaceView implements Runnable {
 
     }
 
-    interface Drawable{
-        void draw(Canvas canvas, Paint paint);
-        int getWidth();
-        int getHeight();
-        boolean containsPoint(Point point);
-    }
+
 
     // Do all the drawing
     public void draw() {
