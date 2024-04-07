@@ -1,10 +1,10 @@
 
-# CSC 133 Assignment 3: Snakey Snake Game
+# CSC 133 Final Project
 
-By: Kiranjot Kaur and Imren More
+By: Kiranjot Kaur, Imren More, Marilyn Sarabia Ortiz, Savannah Birdsong-See
 
 The following features are implemented:
 
-- [ ]  Git, Polymorphism, Interfaces
-- [ ]  Add a pause button to game
-- [ ]  Change look of the game
+- [ ] 
+- [ ]  
+- [ ]  
