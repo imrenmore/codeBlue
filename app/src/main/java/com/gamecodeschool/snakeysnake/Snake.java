@@ -340,41 +340,31 @@ class Snake extends MainObject {
 
     // Handle changing direction
     void switchHeading(MotionEvent motionEvent) {
-
-        // Is the tap on the right hand side?
-        if (motionEvent.getX() >= halfWayPoint) {
-            switch (heading) {
-                // Rotate right
-                case UP:
-                    heading = Heading.RIGHT;
-                    break;
-                case RIGHT:
-                    heading = Heading.DOWN;
-                    break;
-                case DOWN:
-                    heading = Heading.LEFT;
-                    break;
-                case LEFT:
-                    heading = Heading.UP;
-                    break;
-
-            }
-        } else {
-            // Rotate left
-            switch (heading) {
-                case UP:
-                    heading = Heading.LEFT;
-                    break;
-                case LEFT:
-                    heading = Heading.DOWN;
-                    break;
-                case DOWN:
-                    heading = Heading.RIGHT;
-                    break;
-                case RIGHT:
-                    heading = Heading.UP;
-                    break;
-            }
+         if(motionEvent.getX() >= halfWayPoint) {
+             heading = rotateClockwise(heading);
+         }
+         else {
+             heading = rotateCounterClockwise(heading);
         }
+    }
+
+    /*
+    Ordinal values:
+    UP - 0
+    DOWN - 1
+    RIGHT - 2
+    LEFT - 3
+     */
+
+    private Heading rotateClockwise(Heading currDirection) {
+         int index = currDirection.ordinal();
+         index = (index + 1) % 4;
+         return Heading.values()[index];
+    }
+
+    private Heading rotateCounterClockwise(Heading currDirection) {
+         int index = currDirection.ordinal();
+         index = (index - 1 + 4) % 4;
+         return Heading.values()[index];
     }
 }
