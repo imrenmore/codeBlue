@@ -66,6 +66,8 @@ class Snake extends MainObject {
     // A bitmap for the body
     private Bitmap mBitmapBody;
 
+    private boolean isBoosted = false; //is the snake currently sped up?
+    private long speedBostLength = 0; //how long the speed boost lasts
 
      Snake(Context context, Point mr, int ss) {
 
@@ -148,7 +150,6 @@ class Snake extends MainObject {
     }
 
     // Get the snake ready for a new game
-
     public void setW(int w) {
         this.w = w;
     }
@@ -162,8 +163,6 @@ class Snake extends MainObject {
         return h;
     }
     void reset(int w, int h) {
-
-
         // Reset the heading
         heading = Heading.RIGHT;
 
@@ -174,16 +173,17 @@ class Snake extends MainObject {
         segmentLocations.add(new Point(w / 2, h / 2));
     }
 
+    //method to activate the speed boost
+    void activateSpeedBoost(long duration) {
+         isBoosted = true;
+         speedBostLength = System.currentTimeMillis() + duration;
+    }
 
     @Override
     public void move() {
-        // Move the body
-        // Start at the back and move it
-        // to the position of the segment in front of it
+        // Move the body segments, from the back to the position of the segment in front
         for (int i = segmentLocations.size() - 1; i > 0; i--) {
-
-            // Make it the same value as the next segment
-            // going forwards towards the head
+            // Make it the same value as the next segment going forwards towards the head
             segmentLocations.get(i).x = segmentLocations.get(i - 1).x;
             segmentLocations.get(i).y = segmentLocations.get(i - 1).y;
         }
@@ -191,26 +191,28 @@ class Snake extends MainObject {
         // Move the head in the appropriate heading
         // Get the existing head position
         Point p = segmentLocations.get(0);
-
         // Move it appropriately
         switch (heading) {
             case UP:
                 p.y--;
                 break;
-
             case RIGHT:
                 p.x++;
                 break;
-
             case DOWN:
                 p.y++;
                 break;
-
             case LEFT:
                 p.x--;
                 break;
         }
-
+        //Check if speed boost is active
+        if(isBoosted && System.currentTimeMillis() < speedBostLength) {
+            move(2); //move two steps instead of one
+        }
+        else {
+            move(1);
+        }
     }
 
     // Overloaded move method to move multiple steps
@@ -367,4 +369,9 @@ class Snake extends MainObject {
          index = (index - 1 + 4) % 4;
          return Heading.values()[index];
     }
+
+    /*
+    Power-ups:
+     */
+    //Check if the snake has eaten a power-up
 }

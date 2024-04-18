@@ -1,6 +1,4 @@
 package com.gamecodeschool.snakeysnake;
-
-
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
@@ -30,6 +28,7 @@ import android.util.Log;
 
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 //Interfaces
 interface GameObject extends Drawable, Movable {
@@ -95,7 +94,8 @@ class SnakeGame extends SurfaceView implements Runnable {
     // There are 1000 milliseconds in a second
     private final long MILLIS_PER_SECOND = 1000;
     private Background background;
-
+    private Apple apple;
+    private ArrayList<PowerUp> mPowerUps;
 
     public class Background {
         private Bitmap mBitmapBackground;
@@ -110,8 +110,6 @@ class SnakeGame extends SurfaceView implements Runnable {
             canvas.drawBitmap(mBitmapBackground, 0,0, null);
         }
     }
-
-
 
     // Overloaded constructor
     public SnakeGame(Context context, Point size, int initialScore) {
@@ -233,7 +231,6 @@ class SnakeGame extends SurfaceView implements Runnable {
         }
     }
 
-
     // Check to see if it is time for an update
     public boolean updateRequired() {
         // Are we due to update the frame
@@ -256,7 +253,26 @@ class SnakeGame extends SurfaceView implements Runnable {
     public void update(int speed) {
         // Adjust the update logic based on the speed parameter
         mSnake.move(speed);  // Assuming move can take speed as a parameter
-        // Did the head of the snake eat the apple?
+
+        //Update power-ups
+        updatePowerUps();
+
+        //Check if the snake ate the apple
+        checkAppleCollision();
+
+        //Check if the snake died
+        checkSnakeDeath();
+    }
+
+    //Update power-ups
+    private void updatePowerUps() {
+        for(PowerUp powerUp : mPowerUps) {
+            powerUp.applyEffect(mSnake);
+        }
+    }
+
+    //Did the head of the snake eat the apple?
+    private void checkAppleCollision() {
         if(mSnake.checkDinner(mApple.getLocation())){
             // This reminds me of Edge of Tomorrow.
             // One day the apple will be ready!
@@ -268,20 +284,20 @@ class SnakeGame extends SurfaceView implements Runnable {
             // Play a sound
             mSP.play(mEat_ID, 1, 1, 0, 0, 1);
         }
+    }
 
-        // Did the snake die?
+    //Did the snake die?
+    private void checkSnakeDeath() {
         if (mSnake.detectDeath()) {
             // Pause the game ready to start again
             mSP.play(mCrashID, 1, 1, 0, 0, 1);
 
             mPaused =true;
         }
-
     }
 
     // Update all the game objects
     public void update() {
-
         // Move the snake
         mSnake.move();
 
@@ -305,7 +321,6 @@ class SnakeGame extends SurfaceView implements Runnable {
 
             mPaused =true;
         }
-
     }
 
     // Do all the drawing
@@ -334,7 +349,50 @@ class SnakeGame extends SurfaceView implements Runnable {
 
             // Unlock the canvas and post the drawing to the screen
             mSurfaceHolder.unlockCanvasAndPost(mCanvas);
+
+            //check if an apple was eaten
+            if (mSnake.checkDinner(mApple.getLocation())) {
+                //Spawn another apple
+                mApple.spawn();
+
+                //increase the score
+                mScore++;
+
+                //play a sound
+                mSP.play(mEat_ID, 1, 1, 0, 0, 1);
+
+                //Randomly spawn a power-up
+                if(shouldSpawnPowerUp()) {
+                    spawnPowerUp();
+                }
+            }
         }
+    }
+
+    //determines whether a regular apple spawns
+    boolean shouldSpawnApple() {
+        double spawnProbability = 0.7; //70% chance everytime an apple is eaten to spawn a regular apple
+        double random = Math.random();
+        return random < spawnProbability; //if random == 0, spawns an apple
+    }
+    //determines if a power-up apples spawns
+    boolean shouldSpawnPowerUp() {
+        double spawnProbability = 0.3; //60% chance everytime an apple is eaten to spawn a power-up
+        double random = Math.random();
+        return random < spawnProbability; //if random == 0, spawns a power-up
+    }
+    //spawns a regular apple
+    private void spawnApple() {
+        apple.spawn();
+    }
+    //spawn a power-up apple
+    private void spawnPowerUp() {
+        int minX = 0;
+        int maxX = NUM_BLOCKS_WIDE;
+        int minY = 0;
+        int maxY = mNumBlocksHigh;
+
+        apple.spawn(minX, maxX, minY, maxY);
     }
 
     // Draws the background image
