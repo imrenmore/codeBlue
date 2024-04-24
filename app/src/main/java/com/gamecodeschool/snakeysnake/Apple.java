@@ -6,6 +6,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.util.Log;
+
 import java.util.Random;
 import com.gamecodeschool.snakeysnake.SnakeGame;
 
@@ -92,7 +94,13 @@ class Apple extends MainObject {
 
     //check if the apple that spawned is golden
     private boolean isGoldenApple() {
-        return mSnakeGame.shouldSpawnPowerUp();
+        if(mSnakeGame != null) {
+            return mSnakeGame.shouldSpawnPowerUp();
+        }
+        else {
+            Log.e("Apple", "SnakeGame object is null");
+            return false;
+        }
     }
 
     @Override
