@@ -84,7 +84,7 @@ class Apple extends MainObject {
     // Draw the apple
     @Override
     public void draw(Canvas canvas, Paint paint) {
-        if(isGoldenApple()) {
+        if(mSnakeGame != null && isGoldenApple()) {
             canvas.drawBitmap(mGoldenApple, location.x * mSize, location.y * mSize, paint);
         }
         else {
