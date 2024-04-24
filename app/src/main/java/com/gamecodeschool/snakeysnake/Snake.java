@@ -244,10 +244,8 @@ class Snake extends MainObject {
     }
 
     boolean checkDinner(Point l) {
-        //if (snakeXs[0] == l.x && snakeYs[0] == l.y) {
-        if (segmentLocations.get(0).x == l.x &&
-                segmentLocations.get(0).y == l.y) {
-
+         if(!segmentLocations.isEmpty() && segmentLocations.get(0).x == l.x &&
+                 segmentLocations.get(0).y == l.y) {
             // Add a new Point to the list
             // located off-screen.
             // This is OK because on the next call to
