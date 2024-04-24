@@ -106,12 +106,6 @@ class SnakeGame extends SurfaceView implements Runnable {
         }
     }
 
-    // Overloaded constructor
-    public SnakeGame(Context context, Point size, int initialScore) {
-        this(context, size);  // Calls the existing constructor
-        mScore = initialScore;  // Sets the initial score
-    }
-
     // This is the constructor method that gets called
     // from com.gamecodeschool.snakeysnake.SnakeActivity
     public SnakeGame(Context context, Point size)  {
@@ -129,6 +123,12 @@ class SnakeGame extends SurfaceView implements Runnable {
         initializeGameObjects(context, blockSize);
         // Sets up the sound engine for the game
         initializeSoundPool(context);
+    }
+
+    // Overloaded constructor
+    public SnakeGame(Context context, Point size, int initialScore) {
+        this(context, size);  // Calls the existing constructor
+        mScore = initialScore;  // Sets the initial score
     }
 
     private void initializeDrawingTools() {
@@ -150,6 +150,7 @@ class SnakeGame extends SurfaceView implements Runnable {
 
         // Initialize game objects
         mApple = new Apple(context, new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize);
+        mApple.setmSnakeGame(this); // Set SnakeGame instance
         mSnake = new Snake(context, new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize);
         mGoldenApple = new Apple(context, new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize);
         mPowerUps = new ArrayList<>();

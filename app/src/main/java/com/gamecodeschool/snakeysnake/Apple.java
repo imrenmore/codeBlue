@@ -39,19 +39,26 @@ class Apple extends MainObject {
         intializeBitmap(context, s);
     }
 
-    //initializing SnakeGame object
-    Apple(SnakeGame snakeGame, Point sr, int s) {
-        this.mSnakeGame = snakeGame;
-        this.mSpawnRange = sr;
-        this.mSize = s;
-        intializeBitmap(snakeGame.getContext(), s);
+    //initialize mSnakeGame
+    public void setmSnakeGame(SnakeGame mSnakeGame) {
+        this.mSnakeGame = mSnakeGame;
     }
+
+//    //initializing SnakeGame object
+//    Apple(SnakeGame snakeGame, Point sr, int s) {
+//        this.mSnakeGame = snakeGame;
+//        this.mSpawnRange = sr;
+//        this.mSize = s;
+//        intializeBitmap(snakeGame.getContext(), s);
+//    }
         private void intializeBitmap(Context context, int s) {
         // Load the image to the bitmap
         mBitmapApple = BitmapFactory.decodeResource(context.getResources(), R.drawable.apple);
         // Resize the bitmap
         mBitmapApple = Bitmap.createScaledBitmap(mBitmapApple, s, s, false);
+        // Load image to the bitmap
         mGoldenApple = BitmapFactory.decodeResource(context.getResources(),R.drawable.golden_apple);
+        // Resize the bitmap
         mGoldenApple = Bitmap.createScaledBitmap(mGoldenApple, s, s, false);
     }
 
