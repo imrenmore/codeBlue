@@ -220,15 +220,19 @@ class Snake extends MainObject {
         }
     }
 
-//    public void applySpeedBoost(int steps, int boostDuration) {
-//        //Check if speed boost is active
-//        if(isBoosted && System.currentTimeMillis() < speedBostLength) {
-//            move(2); //move two steps instead of one
-//        }
-//        else {
-//            move(1);
-//        }
-//    }
+    public void applySpeedBoost(int steps, int boostDuration) {
+        //Check if speed boost is active
+        if(isBoosted && System.currentTimeMillis() < speedBostLength) {
+            //if boost is already in effect, extend the duration
+            speedBostLength += boostDuration;
+        }
+        else {
+            //Apply the speed boost
+            isBoosted = true;
+            speedBostLength = System.currentTimeMillis() + boostDuration;
+            move(steps);
+        }
+    }
 
     boolean detectDeath() {
         // Has the snake died?

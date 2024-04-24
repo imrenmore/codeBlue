@@ -1,6 +1,5 @@
 package com.gamecodeschool.snakeysnake;
 import android.content.Context;
-import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -14,7 +13,6 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-
 // added these for pause button
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -24,9 +22,6 @@ import android.graphics.Typeface;
 
 // added this for debug and errors
 import android.util.Log;
-
-
-
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -76,8 +71,8 @@ class SnakeGame extends SurfaceView implements Runnable {
     // A snake ssss
     private com.gamecodeschool.snakeysnake.Snake mSnake;
     // And an apple
-    private com.gamecodeschool.snakeysnake.Apple mApple;
-
+    private Apple mApple;
+    private Apple mGoldenApple;
     private Bitmap pauseButtonBitmap;
 
     // Constants for the pause button
@@ -85,8 +80,8 @@ class SnakeGame extends SurfaceView implements Runnable {
     private final int pauseButtonHeight = 100;
     private final int pauseButtonMargin = 30;
 
-    //An image to represent background
-    private Bitmap mBitmapBackground;
+//    //An image to represent background
+//    private Bitmap mBitmapBackground;
 
     // Run at 10 frames per second
     private final long TARGET_FPS = 10;
@@ -94,8 +89,8 @@ class SnakeGame extends SurfaceView implements Runnable {
     // There are 1000 milliseconds in a second
     private final long MILLIS_PER_SECOND = 1000;
     private Background background;
-    private Apple apple;
     private ArrayList<PowerUp> mPowerUps;
+    private static final int BOOST_DURATION = 10000; //10 seconds
 
     public class Background {
         private Bitmap mBitmapBackground;
@@ -156,6 +151,8 @@ class SnakeGame extends SurfaceView implements Runnable {
         // Initialize game objects
         mApple = new Apple(context, new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize);
         mSnake = new Snake(context, new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize);
+        mGoldenApple = new Apple(context, new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize);
+        mPowerUps = new ArrayList<>();
     }
 
     private Bitmap loadScaledBitmap(Context context, int resId, int width, int height) {
@@ -226,7 +223,6 @@ class SnakeGame extends SurfaceView implements Runnable {
                     update(1);
                 }
             }
-
             draw();
         }
     }
@@ -278,16 +274,40 @@ class SnakeGame extends SurfaceView implements Runnable {
 
     //Did the head of the snake eat the apple?
     private void checkAppleCollision() {
-        if(mSnake.checkDinner(mApple.getLocation())){
-            // This reminds me of Edge of Tomorrow.
-            // One day the apple will be ready!
-            mApple.spawn();
+        // Check if the head consumed a regular apple
+        if(mGoldenApple != null && mSnake.checkDinner(mApple.getLocation())){
+            // Determine whether to spawn a power-up or apple
+            if(shouldSpawnApple()) {
+                Log.e("SnakeGame", "spawning a regular apple");
+                spawnApple();
+            }
+            else {
+                Log.e("SnakeGame", "spawning a golden apple");
+                spawnPowerUp();
+            }
+            mScore = mScore + 1; // Increment the score
+            mSP.play(mEat_ID, 1, 1, 0, 0, 1); // Play a sound
+        }
 
-            // Add to  mScore
-            mScore = mScore + 1;
-
-            // Play a sound
-            mSP.play(mEat_ID, 1, 1, 0, 0, 1);
+        // Check if the head consumed a golden apple
+        if(mSnake != null && mGoldenApple != null) {
+            if(mSnake.checkDinner(mGoldenApple.getLocation())) {
+                mSnake.applySpeedBoost(2, BOOST_DURATION);
+                // Determine whether to spawn a power-up or apple
+                if(mPowerUps != null) {
+                    if(shouldSpawnPowerUp()) {
+                        Log.e("SnakeGame", "spawning a golden apple");
+                        spawnPowerUp();
+                    }
+                    else {
+                        Log.e("SnakeGame", "spawning a regular apple");
+                        spawnApple();
+                    }
+                }
+                else {
+                    Log.e("SnakeGame", "mPowerUps is null");
+                }
+            }
         }
     }
 
@@ -296,8 +316,7 @@ class SnakeGame extends SurfaceView implements Runnable {
         if (mSnake.detectDeath()) {
             // Pause the game ready to start again
             mSP.play(mCrashID, 1, 1, 0, 0, 1);
-
-            mPaused =true;
+            mPaused = true;
         }
     }
 
@@ -323,8 +342,7 @@ class SnakeGame extends SurfaceView implements Runnable {
         if (mSnake.detectDeath()) {
             // Pause the game ready to start again
             mSP.play(mCrashID, 1, 1, 0, 0, 1);
-
-            mPaused =true;
+            mPaused = true;
         }
     }
 
@@ -350,7 +368,7 @@ class SnakeGame extends SurfaceView implements Runnable {
 
             // Draw the pause button and the name text on the screen
             drawPauseButton();
-            drawNames("Kiranjot Kaur <3 Imren More");
+            drawNames("Kiranjot, Imren, Marilyn, & Savannah");
 
             // Unlock the canvas and post the drawing to the screen
             mSurfaceHolder.unlockCanvasAndPost(mCanvas);
@@ -388,8 +406,14 @@ class SnakeGame extends SurfaceView implements Runnable {
     }
     //spawns a regular apple
     private void spawnApple() {
-        apple.spawn();
+        if(mApple != null) {
+            mApple.spawn();
+        }
+        else {
+            Log.e("SnakeGame", "mApple is null");
+        }
     }
+
     //spawn a power-up apple
     private void spawnPowerUp() {
         int minX = 0;
@@ -397,7 +421,7 @@ class SnakeGame extends SurfaceView implements Runnable {
         int minY = 0;
         int maxY = mNumBlocksHigh;
 
-        apple.spawn(minX, maxX, minY, maxY);
+        mApple.spawn(minX, maxX, minY, maxY);
     }
 
     // Draws the background image
@@ -514,7 +538,6 @@ class SnakeGame extends SurfaceView implements Runnable {
         return true;
     }
 
-
     // Stop the thread
     public void pause() {
         mPlaying = false;
@@ -524,7 +547,6 @@ class SnakeGame extends SurfaceView implements Runnable {
             // Error
         }
     }
-
 
     // Start the thread
     public void resume() {
