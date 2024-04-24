@@ -181,6 +181,18 @@ class Snake extends MainObject {
 
     @Override
     public void move() {
+        move(1); // Call move(int steps) with a default step of 1
+    }
+
+    // Overloaded move method to move multiple steps
+    void move(int steps) {
+        for (int i = 0; i < steps; i++) {
+            moveSingleStep();
+        }
+    }
+
+    //Helper method to perform movement
+    private void moveSingleStep() {
         // Move the body segments, from the back to the position of the segment in front
         for (int i = segmentLocations.size() - 1; i > 0; i--) {
             // Make it the same value as the next segment going forwards towards the head
@@ -206,21 +218,17 @@ class Snake extends MainObject {
                 p.x--;
                 break;
         }
-        //Check if speed boost is active
-        if(isBoosted && System.currentTimeMillis() < speedBostLength) {
-            move(2); //move two steps instead of one
-        }
-        else {
-            move(1);
-        }
     }
 
-    // Overloaded move method to move multiple steps
-    void move(int steps) {
-        for (int i = 0; i < steps; i++) {
-            move(); // Calls the original move method
-        }
-    }
+//    public void applySpeedBoost(int steps, int boostDuration) {
+//        //Check if speed boost is active
+//        if(isBoosted && System.currentTimeMillis() < speedBostLength) {
+//            move(2); //move two steps instead of one
+//        }
+//        else {
+//            move(1);
+//        }
+//    }
 
     boolean detectDeath() {
         // Has the snake died?

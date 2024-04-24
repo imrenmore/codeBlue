@@ -266,8 +266,13 @@ class SnakeGame extends SurfaceView implements Runnable {
 
     //Update power-ups
     private void updatePowerUps() {
-        for(PowerUp powerUp : mPowerUps) {
-            powerUp.applyEffect(mSnake);
+        if(mPowerUps != null) {
+            for(PowerUp powerUp : mPowerUps) {
+                powerUp.applyEffect(mSnake);
+            }
+        }
+        else {
+            Log.e("SnakeGame", "mPowerUps is null");
         }
     }
 
