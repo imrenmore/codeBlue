@@ -43,15 +43,7 @@ class Apple extends MainObject {
     public void setmSnakeGame(SnakeGame mSnakeGame) {
         this.mSnakeGame = mSnakeGame;
     }
-
-//    //initializing SnakeGame object
-//    Apple(SnakeGame snakeGame, Point sr, int s) {
-//        this.mSnakeGame = snakeGame;
-//        this.mSpawnRange = sr;
-//        this.mSize = s;
-//        intializeBitmap(snakeGame.getContext(), s);
-//    }
-        private void intializeBitmap(Context context, int s) {
+    private void intializeBitmap(Context context, int s) {
         // Load the image to the bitmap
         mBitmapApple = BitmapFactory.decodeResource(context.getResources(), R.drawable.apple);
         // Resize the bitmap
@@ -91,10 +83,14 @@ class Apple extends MainObject {
     // Draw the apple
     @Override
     public void draw(Canvas canvas, Paint paint) {
-        if(mSnakeGame != null && isGoldenApple()) {
+        boolean isGolden = isGoldenApple(); // grab isGoldenApple before the logic statement
+        Log.d("Apple", "Drawing apple");
+        if(isGolden) {
+            Log.d("Apple", "Drawing golden apple");
             canvas.drawBitmap(mGoldenApple, location.x * mSize, location.y * mSize, paint);
         }
         else {
+            Log.d("Apple", "drawing regular apple");
             canvas.drawBitmap(mBitmapApple, location.x * mSize, location.y * mSize, paint);
         }
     }
@@ -102,7 +98,9 @@ class Apple extends MainObject {
     //check if the apple that spawned is golden
     private boolean isGoldenApple() {
         if(mSnakeGame != null) {
-            return mSnakeGame.shouldSpawnPowerUp();
+            boolean isGolden = mSnakeGame.shouldSpawnPowerUp();
+            Log.d("Apple","isGoldenApple: " + isGolden);
+            return isGolden;
         }
         else {
             Log.e("Apple", "SnakeGame object is null");

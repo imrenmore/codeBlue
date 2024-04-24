@@ -35,5 +35,5 @@ class PowerUp {
 }
 
 enum PowerUpType {
-    SPEED_UP, SLOW_DOWN
+    SPEED_UP, SPEED_DOWN
 }
