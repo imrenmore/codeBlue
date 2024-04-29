@@ -15,7 +15,7 @@ import android.os.Build;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-
+import android.media.MediaPlayer;
 
 // added these for pause button
 import android.graphics.Bitmap;
@@ -48,6 +48,7 @@ interface Drawable{
 }
 
 class SnakeGame extends SurfaceView implements Runnable {
+    private MediaPlayer mMediaPlayer;
 
     // Objects for the game loop/thread
     private Thread mThread = null;
@@ -111,6 +112,12 @@ class SnakeGame extends SurfaceView implements Runnable {
         }
     }
 
+    private void startBackgroundMusic(Context context) {
+        mMediaPlayer = MediaPlayer.create(context, R.raw.bg_music);
+        mMediaPlayer.setLooping(true); // Set looping
+        mMediaPlayer.setVolume(1.0f, 1.0f); // Set volume
+        mMediaPlayer.start(); // Start playback
+    }
 
 
     // Overloaded constructor
@@ -136,6 +143,7 @@ class SnakeGame extends SurfaceView implements Runnable {
         initializeGameObjects(context, blockSize);
         // Sets up the sound engine for the game
         initializeSoundPool(context);
+        startBackgroundMusic(context);
     }
 
     private void initializeDrawingTools() {
@@ -453,20 +461,50 @@ class SnakeGame extends SurfaceView implements Runnable {
 
 
     // Stop the thread
-    public void pause() {
-        mPlaying = false;
-        try {
-            mThread.join();
-        } catch (InterruptedException e) {
-            // Error
+//    public void pause() {
+//        mPlaying = false;
+//        try {
+//            mThread.join();
+//        } catch (InterruptedException e) {
+//            // Error
+//        }
+//    }
+//
+//
+//    // Start the thread
+//    public void resume() {
+//        mPlaying = true;
+//        mThread = new Thread(this);
+//        mThread.start();
+//    }
+    public void resume() {
+        if (mMediaPlayer == null) {
+            startBackgroundMusic(getContext());
+        }
+        if (mThread == null) {
+            mPlaying = true;
+            mThread = new Thread(this);
+            mThread.start();
         }
     }
 
-
-    // Start the thread
-    public void resume() {
-        mPlaying = true;
-        mThread = new Thread(this);
-        mThread.start();
+    public void pause() {
+        if (mMediaPlayer != null) {
+            if (mMediaPlayer.isPlaying()) {
+                mMediaPlayer.pause();
+            }
+            mMediaPlayer.release();
+            mMediaPlayer = null;
+        }
+        mPlaying = false;
+        try {
+            if (mThread != null) {
+                mThread.join();
+                mThread = null;
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
+
 }
