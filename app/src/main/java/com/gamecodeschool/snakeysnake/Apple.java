@@ -11,7 +11,6 @@ import android.util.Log;
 import java.util.Random;
 import com.gamecodeschool.snakeysnake.SnakeGame;
 
-
 class Apple extends MainObject {
     private SnakeGame mSnakeGame;
 

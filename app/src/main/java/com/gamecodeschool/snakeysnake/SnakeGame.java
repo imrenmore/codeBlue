@@ -376,19 +376,21 @@ class SnakeGame extends SurfaceView implements Runnable {
 
             //check if an apple was eaten
             if (mSnake.checkDinner(mApple.getLocation())) {
-                //Spawn another apple
-                mApple.spawn();
+
+                //Either spawn an apple or a power-up
+                if(shouldSpawnPowerUp()) {
+                    spawnPowerUp();
+                }
+                else {
+                    //Spawn another apple
+                    mApple.spawn();
+                }
 
                 //increase the score
                 mScore++;
 
                 //play a sound
                 mSP.play(mEat_ID, 1, 1, 0, 0, 1);
-
-                //Randomly spawn a power-up
-                if(shouldSpawnPowerUp()) {
-                    spawnPowerUp();
-                }
             }
         }
     }
@@ -397,13 +399,13 @@ class SnakeGame extends SurfaceView implements Runnable {
     boolean shouldSpawnApple() {
         double spawnProbability = 0.7; //70% chance everytime an apple is eaten to spawn a regular apple
         double random = Math.random();
-        return random < spawnProbability; //if random == 0, spawns an apple
+        return random < spawnProbability; //if random < 0, spawns an apple
     }
     //determines if a power-up apples spawns
     boolean shouldSpawnPowerUp() {
-        double spawnProbability = 0.3; //60% chance everytime an apple is eaten to spawn a power-up
+        double spawnProbability = 0.3; //30% chance everytime an apple is eaten to spawn a power-up
         double random = Math.random();
-        return random < spawnProbability; //if random == 0, spawns a power-up
+        return random < spawnProbability; //if random < 0, spawns a power-up
     }
     //spawns a regular apple
     private void spawnApple() {
@@ -455,7 +457,6 @@ class SnakeGame extends SurfaceView implements Runnable {
         // Draws the main text, exactly over the outline
         mCanvas.drawText(tapToPlayText, 200, 700, mPaint);
     }
-
 
     // Draws the name text on the screen
     private void drawNames(String name) {
@@ -534,7 +535,6 @@ class SnakeGame extends SurfaceView implements Runnable {
 
             default:
                 break;
-
         }
         return true;
     }
