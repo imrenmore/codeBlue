@@ -315,14 +315,15 @@ class SnakeGame extends SurfaceView implements Runnable {
 
             // Draw the game's background
             drawBackground();
-            // Draw the current score
-            drawScore();
+//            // Draw the current score
+//            drawScore();
             // Draw the apple and snake
             mApple.draw(mCanvas, mPaint);
             mSnake.draw(mCanvas, mPaint);
 
             // If the game is paused, draw the paused text overlay
             if (mPaused) {
+                drawFinal(mCanvas, mPaint);
                 drawPausedText();
             }
 
@@ -341,10 +342,23 @@ class SnakeGame extends SurfaceView implements Runnable {
     }
 
     // Renders the current score on the screen
-    private void drawScore() {
+    public void drawScore() {
         mPaint.setColor(Color.argb(255, 255, 255, 255));
         mPaint.setTextSize(120);
         mCanvas.drawText("" + mScore, 20, 120, mPaint);
+    }
+
+    //Draws player's final score
+    public void drawFinal(Canvas canvas, Paint paint) {
+        Paint finalPaint = new Paint(paint);
+        String score = "Final Score:" + mScore;
+        finalPaint.setColor(Color.WHITE);
+        finalPaint.setTextSize(100);
+        //adjusting the title of Game Over to be positioned above tap to play
+        finalPaint.setTextAlign(Paint.Align.CENTER);
+        float x = (float) canvas.getWidth() / 2;
+        float y = (float) canvas.getHeight() / 2 - finalPaint.descent() - 180;
+        canvas.drawText(score, x , y, finalPaint );
     }
 
     // Displays a "Paused" message overlay when the game is paused
