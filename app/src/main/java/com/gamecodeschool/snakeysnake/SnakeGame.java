@@ -1,6 +1,5 @@
 package com.gamecodeschool.snakeysnake;
 
-
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
@@ -15,7 +14,6 @@ import android.os.Build;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-
 
 // added these for pause button
 import android.graphics.Bitmap;
@@ -330,7 +328,7 @@ class SnakeGame extends SurfaceView implements Runnable {
 
             // Draw the pause button and the name text on the screen
             drawPauseButton();
-            drawNames("Kiranjot Kaur <3 Imren More");
+            drawNames("Kiranjot, Imren, Marilyn, Savannah <3");
 
             // Unlock the canvas and post the drawing to the screen
             mSurfaceHolder.unlockCanvasAndPost(mCanvas);
