@@ -325,6 +325,8 @@ class SnakeGame extends SurfaceView implements Runnable {
             if (mPaused) {
                 drawFinal(mCanvas, mPaint);
                 drawPausedText();
+            } else {
+                drawScore();
             }
 
             // Draw the pause button and the name text on the screen
