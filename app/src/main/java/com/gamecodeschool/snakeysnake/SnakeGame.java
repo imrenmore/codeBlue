@@ -268,6 +268,9 @@ class SnakeGame extends SurfaceView implements Runnable {
             // Play a sound
             mSP.play(mEat_ID, 1, 1, 0, 0, 1);
         }
+        if (mApple.needsRespawn()) {
+            mApple.spawn();
+        }
 
         // Did the snake die?
         if (mSnake.detectDeath()) {
