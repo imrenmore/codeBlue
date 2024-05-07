@@ -25,6 +25,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.ArrayList;
 
+
 //Interfaces
 interface GameObject extends Drawable, Movable {
     Point getLocation();
@@ -74,14 +75,12 @@ class SnakeGame extends SurfaceView implements Runnable {
     private Apple mApple;
     private Apple mGoldenApple;
     private Bitmap pauseButtonBitmap;
+    private SpawnUtil mSpawnUtil;
 
     // Constants for the pause button
     private final int pauseButtonWidth = 100;
     private final int pauseButtonHeight = 100;
     private final int pauseButtonMargin = 30;
-
-//    //An image to represent background
-//    private Bitmap mBitmapBackground;
 
     // Run at 10 frames per second
     private final long TARGET_FPS = 10;
@@ -91,6 +90,10 @@ class SnakeGame extends SurfaceView implements Runnable {
     private Background background;
     private ArrayList<PowerUp> mPowerUps;
     private static final int BOOST_DURATION = 10000; //10 seconds
+
+    private long lastSpawnTime;
+    private boolean isOnBoard;
+    private final long COOLDOWN_DURATION = 5000; // 5 second cooldown
 
     public class Background {
         private Bitmap mBitmapBackground;
@@ -137,6 +140,11 @@ class SnakeGame extends SurfaceView implements Runnable {
         mPaint = new Paint();
     }
 
+    public void initializeCooldownTools() {
+        lastSpawnTime = System.currentTimeMillis();
+        isOnBoard = false;
+    }
+
     private int calculateBlockSize(Point size) {
         // Work out how many pixels each block is and how many blocks fit into the height
         int blockSize = size.x / NUM_BLOCKS_WIDE;
@@ -154,6 +162,7 @@ class SnakeGame extends SurfaceView implements Runnable {
         mSnake = new Snake(context, new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize);
         mGoldenApple = new Apple(context, new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize);
         mPowerUps = new ArrayList<>();
+        mSpawnUtil = new SpawnUtil(mApple, mNumBlocksHigh);
     }
 
     private Bitmap loadScaledBitmap(Context context, int resId, int width, int height) {
@@ -198,7 +207,6 @@ class SnakeGame extends SurfaceView implements Runnable {
 
     // Called to start a new game
     public void newGame() {
-
         // reset the snake
         mSnake.reset(NUM_BLOCKS_WIDE, mNumBlocksHigh);
 
@@ -211,7 +219,6 @@ class SnakeGame extends SurfaceView implements Runnable {
         // Setup mNextFrameTime so an update can triggered
         mNextFrameTime = System.currentTimeMillis();
     }
-
 
     // Handles the game loop
     @Override
@@ -278,13 +285,13 @@ class SnakeGame extends SurfaceView implements Runnable {
         // Check if the head consumed a regular apple
         if(mGoldenApple != null && mSnake.checkDinner(mApple.getLocation())){
             // Determine whether to spawn a power-up or apple
-            if(shouldSpawnApple()) {
+            if(SpawnUtil.shouldSpawnApple()) {
                 Log.e("SnakeGame", "spawning a regular apple");
-                spawnApple();
+                mSpawnUtil.spawnApple();
             }
             else {
                 Log.e("SnakeGame", "spawning a golden apple");
-                spawnPowerUp();
+                mSpawnUtil.spawnPowerUp();
             }
             mScore = mScore + 1; // Increment the score
             mSP.play(mEat_ID, 1, 1, 0, 0, 1); // Play a sound
@@ -296,13 +303,13 @@ class SnakeGame extends SurfaceView implements Runnable {
                 mSnake.applySpeedBoost(2, BOOST_DURATION);
                 // Determine whether to spawn a power-up or apple
                 if(mPowerUps != null) {
-                    if(shouldSpawnPowerUp()) {
+                    if(SpawnUtil.shouldSpawnPowerUp()) {
                         Log.e("SnakeGame", "spawning a golden apple");
-                        spawnPowerUp();
+                        mSpawnUtil.spawnPowerUp();
                     }
                     else {
                         Log.e("SnakeGame", "spawning a regular apple");
-                        spawnApple();
+                        mSpawnUtil.spawnApple();
                     }
                 }
                 else {
@@ -328,9 +335,19 @@ class SnakeGame extends SurfaceView implements Runnable {
 
         // Did the head of the snake eat the apple?
         if(mSnake.checkDinner(mApple.getLocation())){
-            // This reminds me of Edge of Tomorrow.
-            // One day the apple will be ready!
-            mApple.spawn();
+            long currTime = System.currentTimeMillis();
+            long elapsedTime = currTime - lastSpawnTime;
+
+            if(elapsedTime >= COOLDOWN_DURATION) {
+                if(SpawnUtil.shouldSpawnApple()) {
+                    mSpawnUtil.spawnApple();
+                }
+                else {
+                    mSpawnUtil.spawnPowerUp();
+                }
+            }
+            // Set the last spawn time to current time
+            lastSpawnTime = currTime;
 
             // Add to  mScore
             mScore = mScore + 1;
@@ -378,12 +395,12 @@ class SnakeGame extends SurfaceView implements Runnable {
             if (mSnake.checkDinner(mApple.getLocation())) {
 
                 //Either spawn an apple or a power-up
-                if(shouldSpawnPowerUp()) {
-                    spawnPowerUp();
+                if(SpawnUtil.shouldSpawnPowerUp()) {
+                    mSpawnUtil.spawnPowerUp();
                 }
                 else {
                     //Spawn another apple
-                    mApple.spawn();
+                    mSpawnUtil.spawnApple();
                 }
 
                 //increase the score
@@ -395,37 +412,6 @@ class SnakeGame extends SurfaceView implements Runnable {
         }
     }
 
-    //determines whether a regular apple spawns
-    boolean shouldSpawnApple() {
-        double spawnProbability = 0.7; //70% chance everytime an apple is eaten to spawn a regular apple
-        double random = Math.random();
-        return random < spawnProbability; //if random < 0, spawns an apple
-    }
-    //determines if a power-up apples spawns
-    boolean shouldSpawnPowerUp() {
-        double spawnProbability = 0.3; //30% chance everytime an apple is eaten to spawn a power-up
-        double random = Math.random();
-        return random < spawnProbability; //if random < 0, spawns a power-up
-    }
-    //spawns a regular apple
-    private void spawnApple() {
-        if(mApple != null) {
-            mApple.spawn();
-        }
-        else {
-            Log.e("SnakeGame", "mApple is null");
-        }
-    }
-
-    //spawn a power-up apple
-    private void spawnPowerUp() {
-        int minX = 0;
-        int maxX = NUM_BLOCKS_WIDE;
-        int minY = 0;
-        int maxY = mNumBlocksHigh;
-
-        mApple.spawn(minX, maxX, minY, maxY);
-    }
 
     // Draws the background image
     private void drawBackground() {
