@@ -27,7 +27,7 @@ class Apple extends MainObject {
 
     private long spawnTime;
 
-    private static final long MAX_TIME = 5000;
+    private static final long MAX_TIME = 8000;
 
 
 
