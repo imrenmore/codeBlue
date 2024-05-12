@@ -5,7 +5,6 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.view.Display;
 
-import com.gamecodeschool.snakeysnake.SnakeGame;
 
 public class SnakeActivity extends Activity {
 
