@@ -24,8 +24,10 @@ class Apple extends MainObject {
     private final int mSize;
 
     // An image to represent the apple
+    private Bitmap mBitmap;
     private Bitmap mBitmapApple;
     private Bitmap mGoldenApple;
+
 
     // Set up the apple in the constructor
     Apple(Context context, Point sr, int s) {
@@ -44,6 +46,11 @@ class Apple extends MainObject {
     }
     private void intializeBitmap(Context context, int s) {
         // Load the image to the bitmap
+
+        // Create the default bitmap object
+        mBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.apple);
+        mBitmap = Bitmap.createScaledBitmap(mBitmap, s, s, false);
+
         mBitmapApple = BitmapFactory.decodeResource(context.getResources(), R.drawable.apple);
         // Resize the bitmap
         mBitmapApple = Bitmap.createScaledBitmap(mBitmapApple, s, s, false);
@@ -59,6 +66,13 @@ class Apple extends MainObject {
         Random random = new Random();
         location.x = random.nextInt(mSpawnRange.x) + 1;
         location.y = random.nextInt(mSpawnRange.y - 1) + 1;
+
+        if(isGoldenApple()) {
+            mBitmap = mGoldenApple;
+        }
+        else {
+            mBitmap = mBitmapApple;
+        }
     }
 
     // This is called when a power-up apple is spawned
@@ -66,6 +80,13 @@ class Apple extends MainObject {
         Random random = new Random();
         location.x = random.nextInt(maxX - minX + 1) + minX;
         location.y = random.nextInt(maxY - minY + 1) + minY;
+
+        if(isGoldenApple()) {
+            mBitmap = mGoldenApple;
+        }
+        else {
+            mBitmap = mBitmapApple;
+        }
     }
 
     // Let SnakeGame know where the apple is
@@ -82,16 +103,17 @@ class Apple extends MainObject {
     // Draw the apple
     @Override
     public void draw(Canvas canvas, Paint paint) {
-        boolean isGolden = isGoldenApple(); // grab isGoldenApple before the logic statement
-        Log.d("Apple", "Drawing apple");
-        if(isGolden) {
-            Log.d("Apple", "Drawing golden apple");
-            canvas.drawBitmap(mGoldenApple, location.x * mSize, location.y * mSize, paint);
-        }
-        else {
-            Log.d("Apple", "drawing regular apple");
-            canvas.drawBitmap(mBitmapApple, location.x * mSize, location.y * mSize, paint);
-        }
+        canvas.drawBitmap(mBitmap, location.x * mSize, location.y * mSize, paint);
+//        boolean isGolden = isGoldenApple(); // grab isGoldenApple before the logic statement
+//        Log.d("Apple", "Drawing apple");
+//        if(isGolden) {
+//            Log.d("Apple", "Drawing golden apple");
+//            canvas.drawBitmap(mGoldenApple, location.x * mSize, location.y * mSize, paint);
+//        }
+//        else {
+//            Log.d("Apple", "drawing regular apple");
+//            canvas.drawBitmap(mBitmapApple, location.x * mSize, location.y * mSize, paint);
+//        }
     }
 
     //check if the apple that spawned is golden

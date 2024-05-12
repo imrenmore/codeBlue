@@ -12,7 +12,6 @@ class SpawnUtil {
         this.mNumBlocksHigh = mNumBlocksHigh;
     }
 
-
     //determines whether a regular apple spawns
     public static boolean shouldSpawnApple() {
         double spawnProbability = 0.7; //70% chance everytime an apple is eaten to spawn a regular apple
