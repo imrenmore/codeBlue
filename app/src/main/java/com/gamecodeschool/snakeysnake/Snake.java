@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
@@ -68,6 +69,8 @@ class Snake extends MainObject {
 
     private boolean isBoosted = false; //is the snake currently sped up?
     private long speedBostLength = 0; //how long the speed boost lasts
+    private boolean gameOver = false;
+
 
      Snake(Context context, Point mr, int ss) {
 
@@ -171,6 +174,9 @@ class Snake extends MainObject {
 
         // Start with a single snake segment
         segmentLocations.add(new Point(w / 2, h / 2));
+
+        //Game is Over, reset so the Game Over message doesnt show
+        gameOver=false;
     }
 
     //method to activate the speed boost
@@ -219,7 +225,6 @@ class Snake extends MainObject {
                 break;
         }
     }
-
     public void applySpeedBoost(int steps, int boostDuration) {
         //Check if speed boost is active
         if(isBoosted && System.currentTimeMillis() < speedBostLength) {
@@ -234,24 +239,26 @@ class Snake extends MainObject {
         }
     }
 
-    boolean detectDeath() {
-        // Has the snake died?
-        boolean dead = segmentLocations.get(0).x == -1 ||
-                segmentLocations.get(0).x > mMoveRange.x ||
-                segmentLocations.get(0).y == -1 ||
-                segmentLocations.get(0).y > mMoveRange.y;
+        boolean detectDeath(Wall mWall) {
+            Point head = segmentLocations.get(0);
 
-        // Hit any of the screen edges
+        // Check boundary collision
+        boolean dead = head.x == -1 || head.x > mMoveRange.x || head.y == -1 || head.y > mMoveRange.y;
 
-        // Eaten itself?
+        // Check self-collision
         for (int i = segmentLocations.size() - 1; i > 0; i--) {
-            // Have any of the sections collided with the head
-            if (segmentLocations.get(0).x == segmentLocations.get(i).x &&
-                    segmentLocations.get(0).y == segmentLocations.get(i).y) {
+            if (head.equals(segmentLocations.get(i))) {
                 dead = true;
                 break;
             }
         }
+
+        // Check wall collision
+        if (mWall != null && mWall.checkCollision(head)) {
+            dead = true;
+            gameOver = true;
+        }
+
         return dead;
     }
 
@@ -318,7 +325,23 @@ class Snake extends MainObject {
                         segmentLocations.get(i).y
                                 * mSegmentSize, paint);
             }
+            if (gameOver){
+                drawGameOver(canvas, paint);
+            }
+
         }
+    }
+
+    // Here prints the game over screen after the snake has died
+    private void drawGameOver(Canvas canvas, Paint paint) {
+            Paint gameOver = new Paint(paint);
+            gameOver.setColor(Color.RED);
+            gameOver.setTextSize(100);
+            //adjusting the title of Game Over to be positioned above tap to play
+            gameOver.setTextAlign(Paint.Align.CENTER);
+            float x = (float) canvas.getWidth() / 2;
+            float y = (float) canvas.getHeight() / 2 - gameOver.descent() - 50;
+            canvas.drawText("Game Over", x , y, gameOver );
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.gamecodeschool.snakeysnake;
 
+import com.gamecodeschool.snakeysnake.SnakeGame;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,7 +10,6 @@ import android.graphics.Point;
 import android.util.Log;
 
 import java.util.Random;
-import com.gamecodeschool.snakeysnake.SnakeGame;
 
 class Apple extends MainObject {
     private SnakeGame mSnakeGame;
@@ -28,6 +28,8 @@ class Apple extends MainObject {
     private Bitmap mBitmapApple;
     private Bitmap mGoldenApple;
 
+    private long spawnTime;
+    private static final long MAX_TIME = 8000;
 
     // Set up the apple in the constructor
     Apple(Context context, Point sr, int s) {
@@ -44,9 +46,9 @@ class Apple extends MainObject {
     public void setmSnakeGame(SnakeGame mSnakeGame) {
         this.mSnakeGame = mSnakeGame;
     }
+
     private void intializeBitmap(Context context, int s) {
         // Load the image to the bitmap
-
         // Create the default bitmap object
         mBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.apple);
         mBitmap = Bitmap.createScaledBitmap(mBitmap, s, s, false);
@@ -66,6 +68,7 @@ class Apple extends MainObject {
         Random random = new Random();
         location.x = random.nextInt(mSpawnRange.x) + 1;
         location.y = random.nextInt(mSpawnRange.y - 1) + 1;
+        spawnTime = System.currentTimeMillis();
 
         if(isGoldenApple()) {
             mBitmap = mGoldenApple;
@@ -80,6 +83,7 @@ class Apple extends MainObject {
         Random random = new Random();
         location.x = random.nextInt(maxX - minX + 1) + minX;
         location.y = random.nextInt(maxY - minY + 1) + minY;
+        spawnTime = System.currentTimeMillis();
 
         if(isGoldenApple()) {
             mBitmap = mGoldenApple;
@@ -87,6 +91,11 @@ class Apple extends MainObject {
         else {
             mBitmap = mBitmapApple;
         }
+    }
+
+    public boolean needsRespawn() {
+        long currentTime = System.currentTimeMillis();
+        return (currentTime - spawnTime > MAX_TIME);
     }
 
     // Let SnakeGame know where the apple is
@@ -104,16 +113,6 @@ class Apple extends MainObject {
     @Override
     public void draw(Canvas canvas, Paint paint) {
         canvas.drawBitmap(mBitmap, location.x * mSize, location.y * mSize, paint);
-//        boolean isGolden = isGoldenApple(); // grab isGoldenApple before the logic statement
-//        Log.d("Apple", "Drawing apple");
-//        if(isGolden) {
-//            Log.d("Apple", "Drawing golden apple");
-//            canvas.drawBitmap(mGoldenApple, location.x * mSize, location.y * mSize, paint);
-//        }
-//        else {
-//            Log.d("Apple", "drawing regular apple");
-//            canvas.drawBitmap(mBitmapApple, location.x * mSize, location.y * mSize, paint);
-//        }
     }
 
     //check if the apple that spawned is golden

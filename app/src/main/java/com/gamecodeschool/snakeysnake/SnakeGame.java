@@ -6,9 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.media.AudioAttributes;
-import android.media.AudioManager;
 import android.media.SoundPool;
-import android.os.Build;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -91,6 +89,7 @@ class SnakeGame extends SurfaceView implements Runnable {
     private ArrayList<PowerUp> mPowerUps;
     private static final int BOOST_DURATION = 10000; //10 seconds
 
+    private Wall mWall;
     private long lastSpawnTime;
     private boolean isOnBoard;
     private final long COOLDOWN_DURATION = 5000; // 5 second cooldown
@@ -126,6 +125,9 @@ class SnakeGame extends SurfaceView implements Runnable {
         initializeGameObjects(context, blockSize);
         // Sets up the sound engine for the game
         initializeSoundPool(context);
+
+        mWall = new Wall(context, new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize, 0);
+
     }
 
     // Overloaded constructor
@@ -215,6 +217,8 @@ class SnakeGame extends SurfaceView implements Runnable {
 
         // Reset the mScore
         mScore = 0;
+        //num of segments
+        mWall.initializeWall(new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), 5);
 
         // Setup mNextFrameTime so an update can triggered
         mNextFrameTime = System.currentTimeMillis();
@@ -317,11 +321,14 @@ class SnakeGame extends SurfaceView implements Runnable {
                 }
             }
         }
+        if (mApple.needsRespawn()) {
+            mApple.spawn();
+        }
     }
 
     //Did the snake die?
     private void checkSnakeDeath() {
-        if (mSnake.detectDeath()) {
+        if (mSnake.detectDeath(mWall)) {
             // Pause the game ready to start again
             mSP.play(mCrashID, 1, 1, 0, 0, 1);
             mPaused = true;
@@ -332,7 +339,11 @@ class SnakeGame extends SurfaceView implements Runnable {
     public void update() {
         // Move the snake
         mSnake.move();
-
+        //checks for collision between the snake head and wall segments
+        if (mWall.checkCollision(mSnake.getLocation())) {
+            //pause the game if collision is detected.
+            mPaused = true;
+        }
         // Did the head of the snake eat the apple?
         if(mSnake.checkDinner(mApple.getLocation())){
             long currTime = System.currentTimeMillis();
@@ -356,11 +367,12 @@ class SnakeGame extends SurfaceView implements Runnable {
             mSP.play(mEat_ID, 1, 1, 0, 0, 1);
         }
 
-        // Did the snake die?
-        if (mSnake.detectDeath()) {
-            // Pause the game ready to start again
+        // if the snake dies against the wall
+        if (mSnake.detectDeath(mWall)) {
+            //ends the game ready to restart
             mSP.play(mCrashID, 1, 1, 0, 0, 1);
-            mPaused = true;
+            newGame();
+            mPaused =true;
         }
     }
 
@@ -373,20 +385,25 @@ class SnakeGame extends SurfaceView implements Runnable {
 
             // Draw the game's background
             drawBackground();
-            // Draw the current score
-            drawScore();
+//            // Draw the current score
+//            drawScore();
             // Draw the apple and snake
             mApple.draw(mCanvas, mPaint);
+            //draws wall
+            mWall.draw(mCanvas, mPaint);
             mSnake.draw(mCanvas, mPaint);
 
             // If the game is paused, draw the paused text overlay
             if (mPaused) {
+                drawFinal(mCanvas, mPaint);
                 drawPausedText();
+            } else {
+                drawScore();
             }
 
             // Draw the pause button and the name text on the screen
             drawPauseButton();
-            drawNames("Kiranjot, Imren, Marilyn, & Savannah");
+            drawNames("Kiranjot, Imren, Marilyn, Savannah <3");
 
             // Unlock the canvas and post the drawing to the screen
             mSurfaceHolder.unlockCanvasAndPost(mCanvas);
@@ -412,17 +429,29 @@ class SnakeGame extends SurfaceView implements Runnable {
         }
     }
 
-
     // Draws the background image
     private void drawBackground() {
         background.draw(mCanvas);
     }
 
     // Renders the current score on the screen
-    private void drawScore() {
+    public void drawScore() {
         mPaint.setColor(Color.argb(255, 255, 255, 255));
         mPaint.setTextSize(120);
         mCanvas.drawText("" + mScore, 20, 120, mPaint);
+    }
+
+    //Draws player's final score
+    public void drawFinal(Canvas canvas, Paint paint) {
+        Paint finalPaint = new Paint(paint);
+        String score = "Final Score:" + mScore;
+        finalPaint.setColor(Color.WHITE);
+        finalPaint.setTextSize(100);
+        //adjusting the title of Game Over to be positioned above tap to play
+        finalPaint.setTextAlign(Paint.Align.CENTER);
+        float x = (float) canvas.getWidth() / 2;
+        float y = (float) canvas.getHeight() / 2 - finalPaint.descent() - 180;
+        canvas.drawText(score, x , y, finalPaint );
     }
 
     // Displays a "Paused" message overlay when the game is paused
