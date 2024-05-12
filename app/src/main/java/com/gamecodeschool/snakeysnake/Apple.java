@@ -25,6 +25,12 @@ class Apple extends MainObject {
     // An image to represent the apple
     private Bitmap mBitmapApple;
 
+    private long spawnTime;
+
+    private static final long MAX_TIME = 8000;
+
+
+
     // Set up the apple in the constructor
     Apple(Context context, Point sr, int s) {
         // Make a note of the passed in spawn range
@@ -59,6 +65,13 @@ class Apple extends MainObject {
         Random random = new Random();
         location.x = random.nextInt(mSpawnRange.x) + 1;
         location.y = random.nextInt(mSpawnRange.y - 1) + 1;
+        spawnTime = System.currentTimeMillis();
+
+    }
+
+    public boolean needsRespawn() {
+        long currentTime = System.currentTimeMillis();
+        return (currentTime - spawnTime > MAX_TIME);
     }
 
     // Let SnakeGame know where the apple is

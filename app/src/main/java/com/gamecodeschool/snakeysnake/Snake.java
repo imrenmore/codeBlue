@@ -228,32 +228,28 @@ class Snake extends MainObject {
         }
     }
 
-    boolean detectDeath() {
-        // Has the snake died?
-        boolean dead = segmentLocations.get(0).x == -1 ||
-                segmentLocations.get(0).x > mMoveRange.x ||
-                segmentLocations.get(0).y == -1 ||
-                segmentLocations.get(0).y > mMoveRange.y;
+        boolean detectDeath(Wall mWall) {
+            Point head = segmentLocations.get(0);
 
-        // Hit any of the screen edges
+        // Check boundary collision
+        boolean dead = head.x == -1 || head.x > mMoveRange.x || head.y == -1 || head.y > mMoveRange.y;
 
-        // Eaten itself?
+        // Check self-collision
         for (int i = segmentLocations.size() - 1; i > 0; i--) {
-            // Have any of the sections collided with the head
-            if (segmentLocations.get(0).x == segmentLocations.get(i).x &&
-                    segmentLocations.get(0).y == segmentLocations.get(i).y) {
+            if (head.equals(segmentLocations.get(i))) {
                 dead = true;
                 break;
             }
         }
-        // If the snake is dead, the game ends and the game over screen can be printed
-        if(dead) {
+
+        // Check wall collision
+        if (mWall != null && mWall.checkCollision(head)) {
+            dead = true;
             gameOver = true;
         }
+
         return dead;
     }
-
-
 
     boolean checkDinner(Point l) {
         //if (snakeXs[0] == l.x && snakeYs[0] == l.y) {
