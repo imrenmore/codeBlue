@@ -72,6 +72,7 @@ class SnakeGame extends SurfaceView implements Runnable {
     // And an apple
     private Apple mApple;
     private Apple mGoldenApple;
+    private Apple mPoisonApple;
     private Bitmap pauseButtonBitmap;
     private SpawnUtil mSpawnUtil;
 
@@ -91,7 +92,6 @@ class SnakeGame extends SurfaceView implements Runnable {
 
     private Wall mWall;
     private long lastSpawnTime;
-    private boolean isOnBoard;
     private final long COOLDOWN_DURATION = 5000; // 5 second cooldown
 
     public class Background {
@@ -142,11 +142,6 @@ class SnakeGame extends SurfaceView implements Runnable {
         mPaint = new Paint();
     }
 
-    public void initializeCooldownTools() {
-        lastSpawnTime = System.currentTimeMillis();
-        isOnBoard = false;
-    }
-
     private int calculateBlockSize(Point size) {
         // Work out how many pixels each block is and how many blocks fit into the height
         int blockSize = size.x / NUM_BLOCKS_WIDE;
@@ -161,8 +156,12 @@ class SnakeGame extends SurfaceView implements Runnable {
         // Initialize game objects
         mApple = new Apple(context, new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize);
         mApple.setmSnakeGame(this); // Set SnakeGame instance
+
         mSnake = new Snake(context, new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize);
+
         mGoldenApple = new Apple(context, new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize);
+        mPoisonApple = new Apple(context, new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize);
+
         mPowerUps = new ArrayList<>();
         mSpawnUtil = new SpawnUtil(mApple, mNumBlocksHigh);
     }
@@ -244,16 +243,12 @@ class SnakeGame extends SurfaceView implements Runnable {
         // Are we due to update the frame
         if(mNextFrameTime <= System.currentTimeMillis()){
             // Tenth of a second has passed
-
             // Setup when the next update will be triggered
-            mNextFrameTime =System.currentTimeMillis()
-                    + MILLIS_PER_SECOND / TARGET_FPS;
-
+            mNextFrameTime =System.currentTimeMillis() + MILLIS_PER_SECOND / TARGET_FPS;
             // Return true so that the update and draw
             // methods are executed
             return true;
         }
-
         return false;
     }
 
@@ -290,12 +285,13 @@ class SnakeGame extends SurfaceView implements Runnable {
         if(mGoldenApple != null && mSnake.checkDinner(mApple.getLocation())){
             // Determine whether to spawn a power-up or apple
             if(SpawnUtil.shouldSpawnApple()) {
-                Log.e("SnakeGame", "spawning a regular apple");
                 mSpawnUtil.spawnApple();
             }
-            else {
-                Log.e("SnakeGame", "spawning a golden apple");
+            else if(SpawnUtil.shouldSpawnPowerUp()) {
                 mSpawnUtil.spawnPowerUp();
+            }
+            else {
+                mSpawnUtil.spawnPowerDown();
             }
             mScore = mScore + 1; // Increment the score
             mSP.play(mEat_ID, 1, 1, 0, 0, 1); // Play a sound
@@ -304,11 +300,14 @@ class SnakeGame extends SurfaceView implements Runnable {
         // Check if the head consumed a golden apple
         if(mSnake != null && mGoldenApple != null) {
             if(mSnake.checkDinner(mGoldenApple.getLocation())) {
-                mSnake.applySpeedBoost(2, BOOST_DURATION);
+                mSnake.applySpeedBoost(5, BOOST_DURATION);
                 // Determine whether to spawn a power-up or apple
                 if(mPowerUps != null) {
                     if(SpawnUtil.shouldSpawnPowerUp()) {
                         mSpawnUtil.spawnPowerUp();
+                    }
+                    else if(SpawnUtil.shouldSpawnPowerDown()) {
+                        mSpawnUtil.spawnPowerDown();
                     }
                     else {
                         mSpawnUtil.spawnApple();
@@ -348,11 +347,14 @@ class SnakeGame extends SurfaceView implements Runnable {
             long elapsedTime = currTime - lastSpawnTime;
 
             if(elapsedTime >= COOLDOWN_DURATION) {
+                if(SpawnUtil.shouldSpawnPowerUp()) {
+                    mSpawnUtil.spawnPowerUp();
+                }
+                if(SpawnUtil.shouldSpawnPowerDown()) {
+                    mSpawnUtil.spawnPowerDown();
+                }
                 if(SpawnUtil.shouldSpawnApple()) {
                     mSpawnUtil.spawnApple();
-                }
-                else {
-                    mSpawnUtil.spawnPowerUp();
                 }
             }
             // Set the last spawn time to current time
@@ -409,9 +411,11 @@ class SnakeGame extends SurfaceView implements Runnable {
             //check if an apple was eaten
             if (mSnake.checkDinner(mApple.getLocation())) {
 
-                //Either spawn an apple or a power-up
                 if(SpawnUtil.shouldSpawnPowerUp()) {
                     mSpawnUtil.spawnPowerUp();
+                }
+                else if(SpawnUtil.shouldSpawnPowerDown()) {
+                    mSpawnUtil.spawnPowerDown();
                 }
                 else {
                     //Spawn another apple

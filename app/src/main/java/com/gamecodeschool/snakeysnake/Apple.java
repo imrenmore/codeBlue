@@ -27,6 +27,7 @@ class Apple extends MainObject {
     private Bitmap mBitmap;
     private Bitmap mBitmapApple;
     private Bitmap mGoldenApple;
+    private Bitmap mPoisonApple;
 
     private long spawnTime;
     private static final long MAX_TIME = 8000;
@@ -60,6 +61,10 @@ class Apple extends MainObject {
         mGoldenApple = BitmapFactory.decodeResource(context.getResources(),R.drawable.golden_apple);
         // Resize the bitmap
         mGoldenApple = Bitmap.createScaledBitmap(mGoldenApple, s, s, false);
+        // Load image to the bitmap
+        mPoisonApple = BitmapFactory.decodeResource(context.getResources(),R.drawable.poison_apple);
+        // Resize the bitmap
+        mPoisonApple = Bitmap.createScaledBitmap(mPoisonApple, s, s, false);
     }
 
     // This is called every time a normal apple is eaten
@@ -72,6 +77,9 @@ class Apple extends MainObject {
 
         if(isGoldenApple()) {
             mBitmap = mGoldenApple;
+        }
+        else if(isPoisonApple()) {
+            mBitmap = mPoisonApple;
         }
         else {
             mBitmap = mBitmapApple;
@@ -87,6 +95,9 @@ class Apple extends MainObject {
 
         if(isGoldenApple()) {
             mBitmap = mGoldenApple;
+        }
+        else if(isPoisonApple()) {
+            mBitmap = mPoisonApple;
         }
         else {
             mBitmap = mBitmapApple;
@@ -118,11 +129,23 @@ class Apple extends MainObject {
     //check if the apple that spawned is golden
     private boolean isGoldenApple() {
         if(mSnakeGame != null) {
-            boolean isGolden = SpawnUtil.shouldSpawnPowerUp();
-            return isGolden;
+            boolean shouldSpawn = SpawnUtil.shouldSpawnPowerUp();
+            Log.d("Apple","Should spawn golden apple: " + shouldSpawn);
+            return shouldSpawn;
         }
         else {
             Log.e("Apple", "SnakeGame object is null");
+            return false;
+        }
+    }
+    private boolean isPoisonApple() {
+        if(mSnakeGame != null) {
+            boolean shouldSpawn = SpawnUtil.shouldSpawnPowerDown();
+            Log.d("Apple", "Should spawn poison apple: " + shouldSpawn);
+            return shouldSpawn;
+        }
+        else {
+            Log.e("Apple","SnakeGame object is null");
             return false;
         }
     }

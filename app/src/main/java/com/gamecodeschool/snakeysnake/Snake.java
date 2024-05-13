@@ -9,8 +9,6 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.view.MotionEvent;
-
-
 import java.util.ArrayList;
 
 abstract class MainObject implements GameObject, Movable, Drawable {
@@ -68,7 +66,7 @@ class Snake extends MainObject {
     private Bitmap mBitmapBody;
 
     private boolean isBoosted = false; //is the snake currently sped up?
-    private long speedBostLength = 0; //how long the speed boost lasts
+    private long speedBoostLength = 0; //how long the speed boost lasts
     private boolean gameOver = false;
 
 
@@ -182,7 +180,13 @@ class Snake extends MainObject {
     //method to activate the speed boost
     void activateSpeedBoost(long duration) {
          isBoosted = true;
-         speedBostLength = System.currentTimeMillis() + duration;
+         speedBoostLength = System.currentTimeMillis() + duration;
+    }
+
+    //method to activate speed decrease
+    void activateSpeedDecrease(long duration) {
+         isBoosted = false;
+         speedBoostLength = System.currentTimeMillis() + duration;
     }
 
     @Override
@@ -227,16 +231,20 @@ class Snake extends MainObject {
     }
     public void applySpeedBoost(int steps, int boostDuration) {
         //Check if speed boost is active
-        if(isBoosted && System.currentTimeMillis() < speedBostLength) {
+        if(isBoosted && System.currentTimeMillis() < speedBoostLength) {
             //if boost is already in effect, extend the duration
-            speedBostLength += boostDuration;
+            speedBoostLength += boostDuration;
         }
         else {
             //Apply the speed boost
             isBoosted = true;
-            speedBostLength = System.currentTimeMillis() + boostDuration;
+            speedBoostLength = System.currentTimeMillis() + boostDuration;
             move(steps);
         }
+    }
+
+    public void applySpeedDecrease() {
+
     }
 
         boolean detectDeath(Wall mWall) {

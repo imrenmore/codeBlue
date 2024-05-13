@@ -31,6 +31,9 @@ class PowerUp {
         if(type == PowerUpType.SPEED_UP) {
             snake.activateSpeedBoost(duration);
         }
+        if(type == PowerUpType.SPEED_DOWN) {
+            snake.activateSpeedDecrease(duration);
+        }
     }
 }
 
