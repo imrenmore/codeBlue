@@ -9,8 +9,6 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.view.MotionEvent;
-
-
 import java.util.ArrayList;
 
 abstract class MainObject implements GameObject, Movable, Drawable {
@@ -67,8 +65,10 @@ class Snake extends MainObject {
     // A bitmap for the body
     private Bitmap mBitmapBody;
 
+    private boolean isBoosted = false; //is the snake currently sped up?
+    private long speedBoostLength = 0; //how long the speed boost lasts
     private boolean gameOver = false;
-
+    private SnakeGame mSnakeGame;
 
      Snake(Context context, Point mr, int ss) {
 
@@ -83,20 +83,20 @@ class Snake extends MainObject {
         // Create and scale the bitmaps
         mBitmapHeadRight = BitmapFactory
                 .decodeResource(context.getResources(),
-                        R.drawable.head);
+                        R.drawable.alihead);
 
         // Create 3 more versions of the head for different headings
         mBitmapHeadLeft = BitmapFactory
                 .decodeResource(context.getResources(),
-                        R.drawable.head);
+                        R.drawable.alihead);
 
         mBitmapHeadUp = BitmapFactory
                 .decodeResource(context.getResources(),
-                        R.drawable.head);
+                        R.drawable.alihead);
 
         mBitmapHeadDown = BitmapFactory
                 .decodeResource(context.getResources(),
-                        R.drawable.head);
+                        R.drawable.alihead);
 
         // Modify the bitmaps to face the snake head
         // in the correct direction
@@ -139,6 +139,10 @@ class Snake extends MainObject {
         halfWayPoint = mr.x * ss / 2;
     }
 
+    void setGame(SnakeGame mSnakeGame) {
+         this.mSnakeGame = mSnakeGame;
+    }
+
     // Overloaded reset method to reset with a custom length
     void reset(int w, int h, int length) {
         heading = Heading.RIGHT;
@@ -151,7 +155,6 @@ class Snake extends MainObject {
     }
 
     // Get the snake ready for a new game
-
     public void setW(int w) {
         this.w = w;
     }
@@ -165,8 +168,6 @@ class Snake extends MainObject {
         return h;
     }
     void reset(int w, int h) {
-
-
         // Reset the heading
         heading = Heading.RIGHT;
 
@@ -178,20 +179,39 @@ class Snake extends MainObject {
 
         //Game is Over, reset so the Game Over message doesnt show
         gameOver=false;
-
-
     }
 
+    //method to activate the speed boost
+    void activateSpeedBoost(long duration) {
+         isBoosted = true;
+         mSnakeGame.update(2);
+         speedBoostLength = System.currentTimeMillis() + duration;
+    }
+
+    //method to activate speed decrease
+    void activateSpeedDecrease(long duration) {
+         isBoosted = false;
+         mSnakeGame.update(0.5);
+         speedBoostLength = System.currentTimeMillis() + duration;
+    }
 
     @Override
     public void move() {
-        // Move the body
-        // Start at the back and move it
-        // to the position of the segment in front of it
-        for (int i = segmentLocations.size() - 1; i > 0; i--) {
+        move(1); // Call move(int steps) with a default step of 1
+    }
 
-            // Make it the same value as the next segment
-            // going forwards towards the head
+    // Overloaded move method to move multiple steps
+    void move(double steps) {
+        for (int i = 0; i < steps; i++) {
+            moveSingleStep();
+        }
+    }
+
+    //Helper method to perform movement
+    private void moveSingleStep() {
+        // Move the body segments, from the back to the position of the segment in front
+        for (int i = segmentLocations.size() - 1; i > 0; i--) {
+            // Make it the same value as the next segment going forwards towards the head
             segmentLocations.get(i).x = segmentLocations.get(i - 1).x;
             segmentLocations.get(i).y = segmentLocations.get(i - 1).y;
         }
@@ -199,33 +219,32 @@ class Snake extends MainObject {
         // Move the head in the appropriate heading
         // Get the existing head position
         Point p = segmentLocations.get(0);
-
         // Move it appropriately
         switch (heading) {
             case UP:
                 p.y--;
                 break;
-
             case RIGHT:
                 p.x++;
                 break;
-
             case DOWN:
                 p.y++;
                 break;
-
             case LEFT:
                 p.x--;
                 break;
         }
-
+    }
+    public void applySpeedBoost(double steps, int boostDuration) {
+         isBoosted = true;
+         speedBoostLength = System.currentTimeMillis() + boostDuration;
+         move(steps);
     }
 
-    // Overloaded move method to move multiple steps
-    void move(int steps) {
-        for (int i = 0; i < steps; i++) {
-            move(); // Calls the original move method
-        }
+    public void applySpeedDecrease(double steps, int boostDuration) {
+        isBoosted = false;
+        speedBoostLength = System.currentTimeMillis() + boostDuration;
+        move(steps);
     }
 
         boolean detectDeath(Wall mWall) {
@@ -252,15 +271,8 @@ class Snake extends MainObject {
     }
 
     boolean checkDinner(Point l) {
-        //if (snakeXs[0] == l.x && snakeYs[0] == l.y) {
-        if (segmentLocations.get(0).x == l.x &&
-                segmentLocations.get(0).y == l.y) {
-
-            // Add a new Point to the list
-            // located off-screen.
-            // This is OK because on the next call to
-            // move it will take the position of
-            // the segment in front of it
+         if(!segmentLocations.isEmpty() && segmentLocations.get(0).x == l.x &&
+                 segmentLocations.get(0).y == l.y) {
             segmentLocations.add(new Point(-10, -10));
             return true;
         }
@@ -366,41 +378,31 @@ class Snake extends MainObject {
 
     // Handle changing direction
     void switchHeading(MotionEvent motionEvent) {
-
-        // Is the tap on the right hand side?
-        if (motionEvent.getX() >= halfWayPoint) {
-            switch (heading) {
-                // Rotate right
-                case UP:
-                    heading = Heading.RIGHT;
-                    break;
-                case RIGHT:
-                    heading = Heading.DOWN;
-                    break;
-                case DOWN:
-                    heading = Heading.LEFT;
-                    break;
-                case LEFT:
-                    heading = Heading.UP;
-                    break;
-
-            }
-        } else {
-            // Rotate left
-            switch (heading) {
-                case UP:
-                    heading = Heading.LEFT;
-                    break;
-                case LEFT:
-                    heading = Heading.DOWN;
-                    break;
-                case DOWN:
-                    heading = Heading.RIGHT;
-                    break;
-                case RIGHT:
-                    heading = Heading.UP;
-                    break;
-            }
+         if(motionEvent.getX() >= halfWayPoint) {
+             heading = rotateClockwise(heading);
+         }
+         else {
+             heading = rotateCounterClockwise(heading);
         }
+    }
+
+    /*
+    Ordinal values:
+    UP - 0
+    DOWN - 1
+    RIGHT - 2
+    LEFT - 3
+     */
+
+    private Heading rotateClockwise(Heading currDirection) {
+         int index = currDirection.ordinal();
+         index = (index + 1) % 4;
+         return Heading.values()[index];
+    }
+
+    private Heading rotateCounterClockwise(Heading currDirection) {
+         int index = currDirection.ordinal();
+         index = (index - 1 + 4) % 4;
+         return Heading.values()[index];
     }
 }

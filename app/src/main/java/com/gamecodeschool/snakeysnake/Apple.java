@@ -7,11 +7,12 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.util.Log;
 
 import java.util.Random;
 
-
 class Apple extends MainObject {
+    private SnakeGame mSnakeGame;
 
     // The location of the apple on the grid
     // Not in pixels
@@ -23,13 +24,13 @@ class Apple extends MainObject {
     private final int mSize;
 
     // An image to represent the apple
+    private Bitmap mBitmap;
     private Bitmap mBitmapApple;
+    private Bitmap mGoldenApple;
+    private Bitmap mPoisonApple;
 
     private long spawnTime;
-
     private static final long MAX_TIME = 8000;
-
-
 
     // Set up the apple in the constructor
     Apple(Context context, Point sr, int s) {
@@ -41,25 +42,32 @@ class Apple extends MainObject {
         location.x = -10;
         intializeBitmap(context, s);
     }
-        private void intializeBitmap(Context context, int s) {
-        // Load the image to the bitmap
-        mBitmapApple = BitmapFactory.decodeResource(context.getResources(), R.drawable.apple);
 
+    //initialize mSnakeGame
+    public void setmSnakeGame(SnakeGame mSnakeGame) {
+        this.mSnakeGame = mSnakeGame;
+    }
+
+    private void intializeBitmap(Context context, int s) {
+        // Load the image to the bitmap
+        // Create the default bitmap object
+        mBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.apple);
+        mBitmap = Bitmap.createScaledBitmap(mBitmap, s, s, false);
+
+        mBitmapApple = BitmapFactory.decodeResource(context.getResources(), R.drawable.apple);
         // Resize the bitmap
         mBitmapApple = Bitmap.createScaledBitmap(mBitmapApple, s, s, false);
+        // Load image to the bitmap
+        mGoldenApple = BitmapFactory.decodeResource(context.getResources(),R.drawable.golden_apple);
+        // Resize the bitmap
+        mGoldenApple = Bitmap.createScaledBitmap(mGoldenApple, s, s, false);
+        // Load image to the bitmap
+        mPoisonApple = BitmapFactory.decodeResource(context.getResources(),R.drawable.poison_apple);
+        // Resize the bitmap
+        mPoisonApple = Bitmap.createScaledBitmap(mPoisonApple, s, s, false);
     }
 
-    // Overloaded spawn method to spawn within a specific range
-
-
-    // Overloaded spawn method to spawn within a specific range
-     public void spawn(int minX, int maxX, int minY, int maxY) {
-        Random random = new Random();
-        location.x = random.nextInt(maxX - minX + 1) + minX;
-        location.y = random.nextInt(maxY - minY + 1) + minY;
-    }
-
-    // This is called every time an apple is eaten
+    // This is called every time a normal apple is eaten
     public void spawn(){
         // Choose two random values and place the apple
         Random random = new Random();
@@ -67,6 +75,33 @@ class Apple extends MainObject {
         location.y = random.nextInt(mSpawnRange.y - 1) + 1;
         spawnTime = System.currentTimeMillis();
 
+        if(isGoldenApple()) {
+            mBitmap = mGoldenApple;
+        }
+        else if(isPoisonApple()) {
+            mBitmap = mPoisonApple;
+        }
+        else {
+            mBitmap = mBitmapApple;
+        }
+    }
+
+    // This is called when a power-up apple is spawned
+    public void spawn(int minX, int maxX, int minY, int maxY) {
+        Random random = new Random();
+        location.x = random.nextInt(maxX - minX + 1) + minX;
+        location.y = random.nextInt(maxY - minY + 1) + minY;
+        spawnTime = System.currentTimeMillis();
+
+        if(isGoldenApple()) {
+            mBitmap = mGoldenApple;
+        }
+        else if(isPoisonApple()) {
+            mBitmap = mPoisonApple;
+        }
+        else {
+            mBitmap = mBitmapApple;
+        }
     }
 
     public boolean needsRespawn() {
@@ -88,7 +123,31 @@ class Apple extends MainObject {
     // Draw the apple
     @Override
     public void draw(Canvas canvas, Paint paint) {
-        canvas.drawBitmap(mBitmapApple, location.x * mSize, location.y * mSize, paint);
+        canvas.drawBitmap(mBitmap, location.x * mSize, location.y * mSize, paint);
+    }
+
+    //check if the apple that spawned is golden
+    private boolean isGoldenApple() {
+        if(mSnakeGame != null) {
+            boolean shouldSpawn = SpawnUtil.shouldSpawnPowerUp();
+            Log.d("Apple","Should spawn golden apple: " + shouldSpawn);
+            return shouldSpawn;
+        }
+        else {
+            Log.e("Apple", "SnakeGame object is null");
+            return false;
+        }
+    }
+    private boolean isPoisonApple() {
+        if(mSnakeGame != null) {
+            boolean shouldSpawn = SpawnUtil.shouldSpawnPowerDown();
+            Log.d("Apple", "Should spawn poison apple: " + shouldSpawn);
+            return shouldSpawn;
+        }
+        else {
+            Log.e("Apple","SnakeGame object is null");
+            return false;
+        }
     }
 
     @Override

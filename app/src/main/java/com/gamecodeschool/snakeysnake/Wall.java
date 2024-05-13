@@ -19,9 +19,7 @@ class Wall extends MainObject {
     private int segmentSize;
 
     public Wall(Context context, Point gridDimensions, int segmentSize, int numberOfSegments) {
-
         this.segmentSize = segmentSize;
-
         initializeWall(gridDimensions, numberOfSegments);
         //calls the inisitialze wall method to populate the wallsegments randomly
         bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.wall);
