@@ -1,5 +1,4 @@
 package com.gamecodeschool.snakeysnake;
-
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Canvas;
@@ -11,7 +10,6 @@ import android.media.SoundPool;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -47,13 +45,10 @@ interface Movable {
     void move();
 }
 
-interface Drawable {
+interface Drawable{
     void draw(Canvas canvas, Paint paint);
-
     int getWidth();
-
     int getHeight();
-
     boolean containsPoint(Point point);
 }
 
@@ -66,6 +61,10 @@ class SnakeGame extends SurfaceView implements Runnable {
     // Is the game currently playing and or paused?
     private volatile boolean mPlaying = false;
     private volatile boolean mPaused = true;
+
+    // welcome screen
+    private boolean mShowHome = true;
+
 
     // for playing sound effects
     private SoundPool mSP;
@@ -117,18 +116,37 @@ class SnakeGame extends SurfaceView implements Runnable {
 
     private MediaPlayer mMediaPlayer;
 
+
+
     public class Background {
         private Bitmap mBitmapBackground;
+        private Bitmap mHomeScreenBackground;
+        private Bitmap mCurrentBackground;
         int width = 2500;
         int height = 1200;
-
         public Background(Context context) {
-            mBitmapBackground = BitmapFactory.decodeResource(getResources(), R.drawable.minecraftbackground);
+            mBitmapBackground = BitmapFactory.decodeResource(context.getResources(), R.drawable.minecraftbackground);
             mBitmapBackground = Bitmap.createScaledBitmap(mBitmapBackground, width, height, false);
+            mHomeScreenBackground = BitmapFactory.decodeResource(context.getResources(), R.drawable.homescreenbackground);
+            mHomeScreenBackground = Bitmap.createScaledBitmap(mHomeScreenBackground, width, height, false);
+            mCurrentBackground = mHomeScreenBackground; // homescreen as default
         }
 
+        public void setGameBackground() {
+            mCurrentBackground = mBitmapBackground;
+        }
+
+        public void setCurrentBackground() {
+            mCurrentBackground = mHomeScreenBackground;
+        }
+
+
         public void draw(Canvas canvas) {
-            canvas.drawBitmap(mBitmapBackground, 0, 0, null);
+            if (mCurrentBackground != null) {
+                canvas.drawBitmap(mCurrentBackground, 0, 0, null);
+            } else {
+                Log.e("Background", "No current background image to draw.");
+            }
         }
     }
 
@@ -234,6 +252,7 @@ class SnakeGame extends SurfaceView implements Runnable {
 
     // Called to start a new game
     public void newGame() {
+        background.setGameBackground();
         // reset the snake
         mSnake.reset(NUM_BLOCKS_WIDE, mNumBlocksHigh);
 
@@ -247,6 +266,14 @@ class SnakeGame extends SurfaceView implements Runnable {
 
         // Setup mNextFrameTime so an update can triggered
         mNextFrameTime = System.currentTimeMillis();
+    }
+
+    public void showHomeScreen() {
+        background.setCurrentBackground();
+        mShowHome = true;
+        mPaused = true;
+        // Invalidate the view to force a redraw
+        invalidate();
     }
 
     // Handles the game loop
@@ -430,61 +457,75 @@ class SnakeGame extends SurfaceView implements Runnable {
 
     // Do all the drawing
     public void draw() {
-        // Check if the surface is valid before drawing
-        if (mSurfaceHolder.getSurface().isValid()) {
-            // Lock the canvas for drawing
-            mCanvas = mSurfaceHolder.lockCanvas();
 
-            // Draw the game's background
-            drawBackground();
+        try {
+            // Check if the surface is valid before drawing
+            if (mSurfaceHolder.getSurface().isValid()) {
+                // Lock the canvas for drawing
+                mCanvas = mSurfaceHolder.lockCanvas();
+                if (mCanvas != null) {
+                    if (mShowHome) {
+                        background.setCurrentBackground();
+                        drawHomeScreen(mCanvas, mPaint);
+                    } else if (mSnake.isGameOver()) {
+                        drawGameOver(mCanvas, mPaint);
+                    } else {
+                        // Draw the game's background
+                        drawBackground();
 //            // Draw the current score
 //            drawScore();
-            // Draw the apple and snake
-            mApple.draw(mCanvas, mPaint);
-            //draws wall
-            mWall.draw(mCanvas, mPaint);
-            mSnake.draw(mCanvas, mPaint);
+                        // Draw the apple and snake
+                        mApple.draw(mCanvas, mPaint);
+                        //draws wall
+                        mWall.draw(mCanvas, mPaint);
+                        mSnake.draw(mCanvas, mPaint);
 
-            // If the game is paused, draw the paused text overlay
-            if (mPaused) {
-                drawFinal(mCanvas, mPaint);
-                drawPausedText();
-            } else {
-                drawScore();
-                checkScore();
+                        // If the game is paused, draw the paused text overlay
+                        if (mPaused) {
+                            drawFinal(mCanvas, mPaint);
+                            drawPausedText();
+                            drawGameOver(mCanvas, mPaint);
+                        } else {
+                            drawScore();
+                            checkScore();
+                        }
+                        if (highscore == 0) {
+                            //init highscore
+                            highscore = Integer.parseInt(getHighscoreValue());
+                        }
+                        // Draw the pause button and the name text on the screen
+                        drawPauseButton();
+                        drawNames("Kiranjot, Imren, Marilyn, Savannah <3");
+                    }
+
+                    mSurfaceHolder.unlockCanvasAndPost(mCanvas);
+                }
             }
-            if (highscore == 0) {
-                //init highscore
-                highscore = Integer.parseInt(getHighscoreValue());
-            }
+        } catch (Exception e) {
+            Log.e("SnakeGame", "Exception in draw method", e);
+        }
 
-            // Draw the pause button and the name text on the screen
-            drawPauseButton();
-            drawNames("Kiranjot, Imren, Marilyn, Savannah <3");
 
-            // Unlock the canvas and post the drawing to the screen
-            mSurfaceHolder.unlockCanvasAndPost(mCanvas);
+        //check if an apple was eaten
+                    if (mSnake.checkDinner(mApple.getLocation())) {
 
-            //check if an apple was eaten
-            if (mSnake.checkDinner(mApple.getLocation())) {
+                        if (SpawnUtil.shouldSpawnPowerUp()) {
+                            mSpawnUtil.spawnPowerUp();
+                        } else if (SpawnUtil.shouldSpawnPowerDown()) {
+                            mSpawnUtil.spawnPowerDown();
+                        } else {
+                            //Spawn another apple
+                            mSpawnUtil.spawnApple();
+                        }
 
-                if (SpawnUtil.shouldSpawnPowerUp()) {
-                    mSpawnUtil.spawnPowerUp();
-                } else if (SpawnUtil.shouldSpawnPowerDown()) {
-                    mSpawnUtil.spawnPowerDown();
-                } else {
-                    //Spawn another apple
-                    mSpawnUtil.spawnApple();
+                        //increase the score
+                        mScore++;
+
+                        //play a sound
+                        mSP.play(mEat_ID, 1, 1, 0, 0, 1);
+                    }
                 }
 
-                //increase the score
-                mScore++;
-
-                //play a sound
-                mSP.play(mEat_ID, 1, 1, 0, 0, 1);
-            }
-        }
-    }
 
     // Draws the background image
     private void drawBackground() {
@@ -494,7 +535,7 @@ class SnakeGame extends SurfaceView implements Runnable {
     // Renders the current score on the screen
     public void drawScore() {
         mPaint.setColor(Color.argb(255, 255, 255, 255));
-        mPaint.setTextSize(120);
+        mPaint.setTextSize(80);
         mCanvas.drawText("" + mScore, 20, 120, mPaint);
         mCanvas.drawText("Highscore: " + highscore, 20, 250, mPaint);
     }
@@ -588,11 +629,18 @@ class SnakeGame extends SurfaceView implements Runnable {
 
         switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_UP:
+                if (mShowHome) {
+                    mShowHome = false;
+                    mPaused = false;
+                    newGame();  // Start a new game
+                    return true;
+                }
                 if (motionEvent.getX() >= pauseButtonXStart && motionEvent.getY() >= pauseButtonYStart && motionEvent.getY() <= pauseButtonYEnd) {
                     // Toggle pause if the pause button area is tapped
                     togglePause();
                     return true;
-                } else if (mPaused) {
+                }
+                if (mPaused) {
                     mPaused = false;
                     newGame();
 
@@ -670,6 +718,8 @@ class SnakeGame extends SurfaceView implements Runnable {
 
     private void initGame() {
         loadHighScore();
+        mShowHome = true;
+        mPaused = true;
         setupBackgroundMusic();
 
     }
@@ -726,6 +776,30 @@ class SnakeGame extends SurfaceView implements Runnable {
             Log.e("SnakeGame", "Error saving high score", e);
         }
     }
+
+    // Here prints the game over screen after the snake has died
+    public void drawGameOver(Canvas canvas, Paint paint) {
+        Paint gameOver = new Paint(paint);
+        gameOver.setColor(Color.RED);
+        gameOver.setTextSize(100);
+        //adjusting the title of Game Over to be positioned above tap to play
+        gameOver.setTextAlign(Paint.Align.CENTER);
+        float x = (float) canvas.getWidth() / 2;
+        float y = (float) canvas.getHeight() / 2 - gameOver.descent() - 50;
+        canvas.drawText("Game Over", x , y, gameOver );
+    }
+
+    //Draws our homescreen
+    private void drawHomeScreen(Canvas canvas, Paint paint){
+       background.draw(canvas);
+
+        paint.setColor(Color.WHITE);
+        paint.setTextSize(100);
+        int x = canvas.getWidth() / 2;
+        int y = canvas.getHeight() / 2;
+        canvas.drawText("CSC 133 Minecraft Java Edition", x-900, y, paint);
+        canvas.drawText("Tap to Start our Game!", x-600, y+100, paint);    }
+
 }
 
 
