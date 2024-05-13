@@ -68,7 +68,7 @@ class Snake extends MainObject {
     private boolean isBoosted = false; //is the snake currently sped up?
     private long speedBoostLength = 0; //how long the speed boost lasts
     private boolean gameOver = false;
-
+    private SnakeGame mSnakeGame;
 
      Snake(Context context, Point mr, int ss) {
 
@@ -139,6 +139,10 @@ class Snake extends MainObject {
         halfWayPoint = mr.x * ss / 2;
     }
 
+    void setGame(SnakeGame mSnakeGame) {
+         this.mSnakeGame = mSnakeGame;
+    }
+
     // Overloaded reset method to reset with a custom length
     void reset(int w, int h, int length) {
         heading = Heading.RIGHT;
@@ -180,12 +184,14 @@ class Snake extends MainObject {
     //method to activate the speed boost
     void activateSpeedBoost(long duration) {
          isBoosted = true;
+         mSnakeGame.update(2);
          speedBoostLength = System.currentTimeMillis() + duration;
     }
 
     //method to activate speed decrease
     void activateSpeedDecrease(long duration) {
          isBoosted = false;
+         mSnakeGame.update(0.5);
          speedBoostLength = System.currentTimeMillis() + duration;
     }
 
@@ -195,7 +201,7 @@ class Snake extends MainObject {
     }
 
     // Overloaded move method to move multiple steps
-    void move(int steps) {
+    void move(double steps) {
         for (int i = 0; i < steps; i++) {
             moveSingleStep();
         }
@@ -229,22 +235,16 @@ class Snake extends MainObject {
                 break;
         }
     }
-    public void applySpeedBoost(int steps, int boostDuration) {
-        //Check if speed boost is active
-        if(isBoosted && System.currentTimeMillis() < speedBoostLength) {
-            //if boost is already in effect, extend the duration
-            speedBoostLength += boostDuration;
-        }
-        else {
-            //Apply the speed boost
-            isBoosted = true;
-            speedBoostLength = System.currentTimeMillis() + boostDuration;
-            move(steps);
-        }
+    public void applySpeedBoost(double steps, int boostDuration) {
+         isBoosted = true;
+         speedBoostLength = System.currentTimeMillis() + boostDuration;
+         move(steps);
     }
 
-    public void applySpeedDecrease() {
-
+    public void applySpeedDecrease(double steps, int boostDuration) {
+        isBoosted = false;
+        speedBoostLength = System.currentTimeMillis() + boostDuration;
+        move(steps);
     }
 
         boolean detectDeath(Wall mWall) {

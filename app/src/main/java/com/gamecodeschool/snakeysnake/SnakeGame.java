@@ -253,7 +253,7 @@ class SnakeGame extends SurfaceView implements Runnable {
     }
 
     // Overloaded update method with custom speed parameter
-    public void update(int speed) {
+    public void update(double speed) {
         // Adjust the update logic based on the speed parameter
         mSnake.move(speed);  // Assuming move can take speed as a parameter
 
@@ -300,7 +300,25 @@ class SnakeGame extends SurfaceView implements Runnable {
         // Check if the head consumed a golden apple
         if(mSnake != null && mGoldenApple != null) {
             if(mSnake.checkDinner(mGoldenApple.getLocation())) {
-                mSnake.applySpeedBoost(5, BOOST_DURATION);
+                mSnake.applySpeedBoost(2, BOOST_DURATION);
+                // Determine whether to spawn a power-up or apple
+                if(mPowerUps != null) {
+                    if(SpawnUtil.shouldSpawnPowerUp()) {
+                        mSpawnUtil.spawnPowerUp();
+                    }
+                    else if(SpawnUtil.shouldSpawnPowerDown()) {
+                        mSpawnUtil.spawnPowerDown();
+                    }
+                    else {
+                        mSpawnUtil.spawnApple();
+                    }
+                }
+                else {
+                    Log.e("SnakeGame", "mPowerUps is null");
+                }
+            }
+            if(mSnake.checkDinner(mPoisonApple.getLocation())) {
+                mSnake.applySpeedDecrease(0.5, BOOST_DURATION);
                 // Determine whether to spawn a power-up or apple
                 if(mPowerUps != null) {
                     if(SpawnUtil.shouldSpawnPowerUp()) {
