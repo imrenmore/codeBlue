@@ -264,13 +264,10 @@ class Snake extends MainObject {
         // Check wall collision
         if (mWall != null && mWall.checkCollision(head)) {
             dead = true;
-            gameOver = true;
         }
         if(dead) {
             gameOver = true;
         }
-
-
         return dead;
     }
 
@@ -331,24 +328,16 @@ class Snake extends MainObject {
                         segmentLocations.get(i).y
                                 * mSegmentSize, paint);
             }
-            if (gameOver){
-                drawGameOver(canvas, paint);
+            if (gameOver) {
+                mSnakeGame.drawGameOver(canvas, paint);
             }
-
         }
     }
 
-    // Here prints the game over screen after the snake has died
-    private void drawGameOver(Canvas canvas, Paint paint) {
-            Paint gameOver = new Paint(paint);
-            gameOver.setColor(Color.RED);
-            gameOver.setTextSize(100);
-            //adjusting the title of Game Over to be positioned above tap to play
-            gameOver.setTextAlign(Paint.Align.CENTER);
-            float x = (float) canvas.getWidth() / 2;
-            float y = (float) canvas.getHeight() / 2 - gameOver.descent() - 50;
-            canvas.drawText("Game Over", x , y, gameOver );
+    public boolean isGameOver() {
+        return gameOver;
     }
+
 
     @Override
     public int getWidth() {
