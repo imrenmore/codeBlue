@@ -28,15 +28,15 @@ class PowerUp {
     }
 
     public void applyEffect(Snake snake) {
-        if(type == PowerUpType.SPEED_UP) {
+        if(type == PowerUpType.GOLDEN_APPLE) {
             snake.activateSpeedBoost(duration);
         }
-        if(type == PowerUpType.SPEED_DOWN) {
+        if(type == PowerUpType.POISON_APPLE) {
             snake.activateSpeedDecrease(duration);
         }
     }
 }
 
 enum PowerUpType {
-    SPEED_UP, SPEED_DOWN
+    GOLDEN_APPLE, POISON_APPLE
 }

@@ -56,6 +56,18 @@ class Apple extends MainObject {
         mPoisonApple = Bitmap.createScaledBitmap(mPoisonApple, s, s, false);
     }
 
+    public int getScoreMultiplier() {
+        if(isGoldenApple()) {
+            return 2; // Receive 2 points if Golden Apple
+        }
+        else if(isPoisonApple()) {
+            return 0; // Receive no points if Poison Apple
+        }
+        else {
+            return 1; // Default gives 1
+        }
+    }
+
     // This is called every time a normal apple is eaten
     public void spawn(){
         // Choose two random values and place the apple

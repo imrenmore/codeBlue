@@ -234,15 +234,12 @@ class SnakeGame extends SurfaceView implements Runnable {
                 // Update 10 times a second
                 if (updateRequired()) {
                     if(mSnake.isBoosted()) {
-                        Log.d("SnakeGame","isBoosted");
                         update(2);
                     }
                     else if(mSnake.isSlowed()) {
-                        Log.d("SnakeGame","isSlowed");
                         update(0);
                     }
                     else {
-                        Log.d("SnakeGame","default");
                         update(1);
                     }
                 }
@@ -269,7 +266,6 @@ class SnakeGame extends SurfaceView implements Runnable {
     public void update(int speed) {
         // Adjust the update logic based on the speed parameter
         mSnake.move(speed);  // Assuming move can take speed as a parameter
-        Log.d("SnakeGame","current speed: " + speed);
 
         //Update power-ups
         updatePowerUps();
@@ -294,8 +290,10 @@ class SnakeGame extends SurfaceView implements Runnable {
 
     //Did the head of the snake eat the apple?
     private void checkAppleCollision() {
-        // Check if the head consumed a regular apple
+        // Check if the head consumed a golden apple
         if (mGoldenApple != null && mSnake.checkDinner(mGoldenApple.getLocation())) {
+            Log.d("SnakeGame", "Score multiplier = " + mGoldenApple.getScoreMultiplier());
+            appleEaten(mGoldenApple);
             if (SpawnUtil.shouldSpawnPowerUp()) {
                 mSnake.applySpeedBoost(2, BOOST_DURATION);
             } else if (SpawnUtil.shouldSpawnPowerDown()) {
@@ -304,6 +302,8 @@ class SnakeGame extends SurfaceView implements Runnable {
             spawnAppleOrPowerUp();
         }
         if (mPoisonApple != null && mSnake.checkDinner(mPoisonApple.getLocation())) {
+            Log.d("SnakeGame", "Score multiplier = " + mPoisonApple.getScoreMultiplier());
+            appleEaten(mPoisonApple);
             if (SpawnUtil.shouldSpawnPowerUp()) {
                 mSnake.applySpeedBoost(2, BOOST_DURATION);
             } else if (SpawnUtil.shouldSpawnPowerDown()) {
@@ -312,6 +312,7 @@ class SnakeGame extends SurfaceView implements Runnable {
             spawnAppleOrPowerUp();
         }
         if (mApple.needsRespawn()) {
+            Log.d("SnakeGame", "Score multiplier = " + mApple.getScoreMultiplier());
             mApple.spawn();
         }
     }
@@ -328,14 +329,11 @@ class SnakeGame extends SurfaceView implements Runnable {
         }
     }
 
-    //Did the snake die?
-//    private void checkSnakeDeath() {
-//        if (mSnake.detectDeath(mWall)) {
-//            // Pause the game ready to start again
-//            mSP.play(mCrashID, 1, 1, 0, 0, 1);
-//            mPaused = true;
-//        }
-//    }
+    private void appleEaten(Apple apple) {
+        int multiplier = apple.getScoreMultiplier();
+        mScore += multiplier;
+    }
+
     private void checkSnakeDeath() {
         // Check for collision with wall or edge
         if (mSnake.detectDeath(mWall) || isEdgeCollision(mSnake.getLocation())) {
@@ -362,6 +360,7 @@ class SnakeGame extends SurfaceView implements Runnable {
             mPaused = true;
             checkScore();
         }
+
         // Did the head of the snake eat the apple?
         if (mSnake.checkDinner(mApple.getLocation())) {
             long currTime = System.currentTimeMillis();
@@ -382,7 +381,7 @@ class SnakeGame extends SurfaceView implements Runnable {
             lastSpawnTime = currTime;
 
             // Add to  mScore
-            mScore = mScore + 1;
+            appleEaten(mApple);
 
             // Play a sound
             mSP.play(mEat_ID, 1, 1, 0, 0, 1);
@@ -407,8 +406,6 @@ class SnakeGame extends SurfaceView implements Runnable {
 
             // Draw the game's background
             drawBackground();
-//            // Draw the current score
-//            drawScore();
             // Draw the apple and snake
             mApple.draw(mCanvas, mPaint);
             //draws wall
@@ -424,7 +421,6 @@ class SnakeGame extends SurfaceView implements Runnable {
                 checkScore();
             }
             if (highscore == 0) {
-                //init highscore
                 highscore = Integer.parseInt(getHighscoreValue());
             }
 
@@ -448,7 +444,7 @@ class SnakeGame extends SurfaceView implements Runnable {
                 }
 
                 //increase the score
-                mScore++;
+                appleEaten(mApple);
 
                 //play a sound
                 mSP.play(mEat_ID, 1, 1, 0, 0, 1);
