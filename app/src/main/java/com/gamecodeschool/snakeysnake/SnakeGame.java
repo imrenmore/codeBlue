@@ -308,11 +308,9 @@ class SnakeGame extends SurfaceView implements Runnable {
                 // Determine whether to spawn a power-up or apple
                 if(mPowerUps != null) {
                     if(SpawnUtil.shouldSpawnPowerUp()) {
-                        Log.e("SnakeGame", "spawning a golden apple");
                         mSpawnUtil.spawnPowerUp();
                     }
                     else {
-                        Log.e("SnakeGame", "spawning a regular apple");
                         mSpawnUtil.spawnApple();
                     }
                 }

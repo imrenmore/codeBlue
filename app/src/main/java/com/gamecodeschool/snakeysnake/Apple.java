@@ -119,7 +119,6 @@ class Apple extends MainObject {
     private boolean isGoldenApple() {
         if(mSnakeGame != null) {
             boolean isGolden = SpawnUtil.shouldSpawnPowerUp();
-            Log.d("Apple","isGoldenApple: " + isGolden);
             return isGolden;
         }
         else {

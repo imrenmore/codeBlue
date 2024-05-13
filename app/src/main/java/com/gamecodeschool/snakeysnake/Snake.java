@@ -265,11 +265,6 @@ class Snake extends MainObject {
     boolean checkDinner(Point l) {
          if(!segmentLocations.isEmpty() && segmentLocations.get(0).x == l.x &&
                  segmentLocations.get(0).y == l.y) {
-            // Add a new Point to the list
-            // located off-screen.
-            // This is OK because on the next call to
-            // move it will take the position of
-            // the segment in front of it
             segmentLocations.add(new Point(-10, -10));
             return true;
         }
@@ -402,9 +397,4 @@ class Snake extends MainObject {
          index = (index - 1 + 4) % 4;
          return Heading.values()[index];
     }
-
-    /*
-    Power-ups:
-     */
-    //Check if the snake has eaten a power-up
 }
