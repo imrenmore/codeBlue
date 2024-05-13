@@ -1,4 +1,5 @@
 package com.gamecodeschool.snakeysnake;
+
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Canvas;
@@ -10,6 +11,7 @@ import android.media.SoundPool;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -29,6 +31,12 @@ import android.util.Log;
 
 import java.util.ArrayList;
 
+import android.content.res.AssetManager;
+import android.content.res.AssetFileDescriptor;
+import android.media.MediaPlayer;
+import android.util.Log;
+import java.io.IOException;
+
 
 //Interfaces
 interface GameObject extends Drawable, Movable {
@@ -39,10 +47,13 @@ interface Movable {
     void move();
 }
 
-interface Drawable{
+interface Drawable {
     void draw(Canvas canvas, Paint paint);
+
     int getWidth();
+
     int getHeight();
+
     boolean containsPoint(Point point);
 }
 
@@ -104,10 +115,13 @@ class SnakeGame extends SurfaceView implements Runnable {
     private long lastSpawnTime;
     private final long COOLDOWN_DURATION = 5000; // 5 second cooldown
 
+    private MediaPlayer mMediaPlayer;
+
     public class Background {
         private Bitmap mBitmapBackground;
         int width = 2500;
         int height = 1200;
+
         public Background(Context context) {
             mBitmapBackground = BitmapFactory.decodeResource(getResources(), R.drawable.minecraftbackground);
             mBitmapBackground = Bitmap.createScaledBitmap(mBitmapBackground, width, height, false);
@@ -203,7 +217,7 @@ class SnakeGame extends SurfaceView implements Runnable {
         try {
             AssetManager assetManager = context.getAssets();
             mEat_ID = mSP.load(assetManager.openFd("eating_sound.ogg"), 0);
-            mCrashID = mSP.load(assetManager.openFd("Minecraft_Music.ogg"), 0);
+            mCrashID = mSP.load(assetManager.openFd("Minecraft_death.ogg"), 0);
             mEdgeCollisionID = mSP.load(assetManager.openFd("Minecraft_death.ogg"), 0);
         } catch (IOException e) {
             Log.e("SnakeGame", "Error loading sound files", e);
@@ -239,7 +253,7 @@ class SnakeGame extends SurfaceView implements Runnable {
     @Override
     public void run() {
         while (mPlaying) {
-            if(!mPaused) {
+            if (!mPaused) {
                 // Update 10 times a second
                 if (updateRequired()) {
                     // can change the speed
@@ -253,10 +267,10 @@ class SnakeGame extends SurfaceView implements Runnable {
     // Check to see if it is time for an update
     public boolean updateRequired() {
         // Are we due to update the frame
-        if(mNextFrameTime <= System.currentTimeMillis()) {
+        if (mNextFrameTime <= System.currentTimeMillis()) {
             // Tenth of a second has passed
             // Setup when the next update will be triggered
-            mNextFrameTime =System.currentTimeMillis() + MILLIS_PER_SECOND / TARGET_FPS;
+            mNextFrameTime = System.currentTimeMillis() + MILLIS_PER_SECOND / TARGET_FPS;
             // Return true so that the update and draw
             // methods are executed
             return true;
@@ -281,8 +295,8 @@ class SnakeGame extends SurfaceView implements Runnable {
 
     //Update power-ups
     private void updatePowerUps() {
-        if(mPowerUps != null) {
-            for(PowerUp powerUp : mPowerUps) {
+        if (mPowerUps != null) {
+            for (PowerUp powerUp : mPowerUps) {
                 powerUp.applyEffect(mSnake);
             }
         } else {
@@ -293,11 +307,11 @@ class SnakeGame extends SurfaceView implements Runnable {
     //Did the head of the snake eat the apple?
     private void checkAppleCollision() {
         // Check if the head consumed a regular apple
-        if(mGoldenApple != null && mSnake.checkDinner(mApple.getLocation())) {
+        if (mGoldenApple != null && mSnake.checkDinner(mApple.getLocation())) {
             // Determine whether to spawn a power-up or apple
-            if(SpawnUtil.shouldSpawnApple()) {
+            if (SpawnUtil.shouldSpawnApple()) {
                 mSpawnUtil.spawnApple();
-            } else if(SpawnUtil.shouldSpawnPowerUp()) {
+            } else if (SpawnUtil.shouldSpawnPowerUp()) {
                 mSpawnUtil.spawnPowerUp();
             } else {
                 mSpawnUtil.spawnPowerDown();
@@ -307,14 +321,14 @@ class SnakeGame extends SurfaceView implements Runnable {
         }
 
         // Check if the head consumed a golden apple
-        if(mSnake != null && mGoldenApple != null) {
-            if(mSnake.checkDinner(mGoldenApple.getLocation())) {
+        if (mSnake != null && mGoldenApple != null) {
+            if (mSnake.checkDinner(mGoldenApple.getLocation())) {
                 mSnake.applySpeedBoost(2, BOOST_DURATION);
                 // Determine whether to spawn a power-up or apple
-                if(mPowerUps != null) {
-                    if(SpawnUtil.shouldSpawnPowerUp()) {
+                if (mPowerUps != null) {
+                    if (SpawnUtil.shouldSpawnPowerUp()) {
                         mSpawnUtil.spawnPowerUp();
-                    } else if(SpawnUtil.shouldSpawnPowerDown()) {
+                    } else if (SpawnUtil.shouldSpawnPowerDown()) {
                         mSpawnUtil.spawnPowerDown();
                     } else {
                         mSpawnUtil.spawnApple();
@@ -323,13 +337,13 @@ class SnakeGame extends SurfaceView implements Runnable {
                     Log.e("SnakeGame", "mPowerUps is null");
                 }
             }
-            if(mSnake.checkDinner(mPoisonApple.getLocation())) {
+            if (mSnake.checkDinner(mPoisonApple.getLocation())) {
                 mSnake.applySpeedDecrease(0.5, BOOST_DURATION);
                 // Determine whether to spawn a power-up or apple
-                if(mPowerUps != null) {
-                    if(SpawnUtil.shouldSpawnPowerUp()) {
+                if (mPowerUps != null) {
+                    if (SpawnUtil.shouldSpawnPowerUp()) {
                         mSpawnUtil.spawnPowerUp();
-                    } else if(SpawnUtil.shouldSpawnPowerDown()) {
+                    } else if (SpawnUtil.shouldSpawnPowerDown()) {
                         mSpawnUtil.spawnPowerDown();
                     } else {
                         mSpawnUtil.spawnApple();
@@ -383,14 +397,14 @@ class SnakeGame extends SurfaceView implements Runnable {
             long currTime = System.currentTimeMillis();
             long elapsedTime = currTime - lastSpawnTime;
 
-            if(elapsedTime >= COOLDOWN_DURATION) {
-                if(SpawnUtil.shouldSpawnPowerUp()) {
+            if (elapsedTime >= COOLDOWN_DURATION) {
+                if (SpawnUtil.shouldSpawnPowerUp()) {
                     mSpawnUtil.spawnPowerUp();
                 }
-                if(SpawnUtil.shouldSpawnPowerDown()) {
+                if (SpawnUtil.shouldSpawnPowerDown()) {
                     mSpawnUtil.spawnPowerDown();
                 }
-                if(SpawnUtil.shouldSpawnApple()) {
+                if (SpawnUtil.shouldSpawnApple()) {
                     mSpawnUtil.spawnApple();
                 }
             }
@@ -484,6 +498,7 @@ class SnakeGame extends SurfaceView implements Runnable {
         mCanvas.drawText("" + mScore, 20, 120, mPaint);
         mCanvas.drawText("Highscore: " + highscore, 20, 250, mPaint);
     }
+
     //Draws player's final score
     public void drawFinal(Canvas canvas, Paint paint) {
         Paint finalPaint = new Paint(paint);
@@ -635,10 +650,51 @@ class SnakeGame extends SurfaceView implements Runnable {
         }
     }
 
+    private void setupBackgroundMusic() {
+        try {
+            AssetManager assetManager = getContext().getAssets();
+            AssetFileDescriptor descriptor = assetManager.openFd("Minecraft_Music.ogg");
+            mMediaPlayer = new MediaPlayer();
+            mMediaPlayer.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength());
+            descriptor.close();
+
+            mMediaPlayer.setLooping(true); // Set looping
+            mMediaPlayer.setVolume(1.0f, 1.0f); // Set volume
+            mMediaPlayer.prepare(); // Prepare the MediaPlayer asynchronously
+            mMediaPlayer.start(); // Start playing
+        } catch (IOException e) {
+            Log.e("SnakeGame", "Error setting up background music", e);
+        }
+    }
+
+
     private void initGame() {
         loadHighScore();
+        setupBackgroundMusic();
 
     }
+
+    public void pauseMusic() {
+        if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+            mMediaPlayer.pause();
+        }
+    }
+
+    public void resumeMusic() {
+        if (mMediaPlayer != null && !mMediaPlayer.isPlaying()) {
+            mMediaPlayer.start();
+        }
+    }
+
+    public void stopMusic() {
+        if (mMediaPlayer != null) {
+            mMediaPlayer.stop();
+            mMediaPlayer.release();
+            mMediaPlayer = null;
+        }
+    }
+
+
     public void checkScore() {
         if (mScore > highscore) {
             highscore = mScore;
