@@ -99,7 +99,7 @@ class SnakeGame extends SurfaceView implements Runnable {
         int width = 2500;
         int height = 1200;
         public Background(Context context) {
-            mBitmapBackground = BitmapFactory.decodeResource(getResources(), R.drawable.background);
+            mBitmapBackground = BitmapFactory.decodeResource(getResources(), R.drawable.minecraftbackground);
             mBitmapBackground = Bitmap.createScaledBitmap(mBitmapBackground, width, height ,false);
         }
 
