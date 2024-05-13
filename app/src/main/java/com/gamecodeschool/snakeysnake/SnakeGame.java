@@ -204,7 +204,7 @@ class SnakeGame extends SurfaceView implements Runnable {
             AssetManager assetManager = context.getAssets();
             mEat_ID = mSP.load(assetManager.openFd("eating_sound.ogg"), 0);
             mCrashID = mSP.load(assetManager.openFd("Minecraft_Music.ogg"), 0);
-            mEdgeCollisionID = mSP.load(assetManager.openFd("Minecraft-death.ogg"), 0);
+            mEdgeCollisionID = mSP.load(assetManager.openFd("Minecraft_death.ogg"), 0);
         } catch (IOException e) {
             Log.e("SnakeGame", "Error loading sound files", e);
         }
