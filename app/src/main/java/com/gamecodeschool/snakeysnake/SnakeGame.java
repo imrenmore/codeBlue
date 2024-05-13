@@ -23,7 +23,6 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.ArrayList;
 
-
 //Interfaces
 interface GameObject extends Drawable, Movable {
     Point getLocation();
@@ -59,17 +58,13 @@ class SnakeGame extends SurfaceView implements Runnable {
     private static int NUM_BLOCKS_WIDE = 40;
     private int mNumBlocksHigh;
 
-    // How many points does the player have
     private int mScore;
 
     // Objects for drawing
     private Canvas mCanvas;
     private SurfaceHolder mSurfaceHolder;
     private Paint mPaint;
-
-    // A snake ssss
-    private com.gamecodeschool.snakeysnake.Snake mSnake;
-    // And an apple
+    private Snake mSnake;
     private Apple mApple;
     private Apple mGoldenApple;
     private Apple mPoisonApple;
@@ -83,8 +78,6 @@ class SnakeGame extends SurfaceView implements Runnable {
 
     // Run at 10 frames per second
     private final long TARGET_FPS = 10;
-
-    // There are 1000 milliseconds in a second
     private final long MILLIS_PER_SECOND = 1000;
     private Background background;
     private ArrayList<PowerUp> mPowerUps;
@@ -102,14 +95,10 @@ class SnakeGame extends SurfaceView implements Runnable {
             mBitmapBackground = BitmapFactory.decodeResource(getResources(), R.drawable.minecraftbackground);
             mBitmapBackground = Bitmap.createScaledBitmap(mBitmapBackground, width, height ,false);
         }
-
         public void draw(Canvas canvas){
             canvas.drawBitmap(mBitmapBackground, 0,0, null);
         }
     }
-
-    // This is the constructor method that gets called
-    // from com.gamecodeschool.snakeysnake.SnakeActivity
     public SnakeGame(Context context, Point size)  {
         super(context);
 
@@ -127,7 +116,6 @@ class SnakeGame extends SurfaceView implements Runnable {
         initializeSoundPool(context);
 
         mWall = new Wall(context, new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize, 0);
-
     }
 
     // Overloaded constructor
@@ -230,8 +218,18 @@ class SnakeGame extends SurfaceView implements Runnable {
             if(!mPaused) {
                 // Update 10 times a second
                 if (updateRequired()) {
-                    // can change the speed
-                    update(1);
+                    if(mSnake.isBoosted()) {
+                        Log.d("SnakeGame","isBoosted");
+                        update(2);
+                    }
+                    else if(mSnake.isSlowed()) {
+                        Log.d("SnakeGame","isSlowed");
+                        update(0);
+                    }
+                    else {
+                        Log.d("SnakeGame","default");
+                        update(1);
+                    }
                 }
             }
             draw();
@@ -253,9 +251,10 @@ class SnakeGame extends SurfaceView implements Runnable {
     }
 
     // Overloaded update method with custom speed parameter
-    public void update(double speed) {
+    public void update(int speed) {
         // Adjust the update logic based on the speed parameter
         mSnake.move(speed);  // Assuming move can take speed as a parameter
+        Log.d("SnakeGame","current speed: " + speed);
 
         //Update power-ups
         updatePowerUps();
@@ -282,62 +281,36 @@ class SnakeGame extends SurfaceView implements Runnable {
     //Did the head of the snake eat the apple?
     private void checkAppleCollision() {
         // Check if the head consumed a regular apple
-        if(mGoldenApple != null && mSnake.checkDinner(mApple.getLocation())){
-            // Determine whether to spawn a power-up or apple
-            if(SpawnUtil.shouldSpawnApple()) {
-                mSpawnUtil.spawnApple();
-            }
-            else if(SpawnUtil.shouldSpawnPowerUp()) {
-                mSpawnUtil.spawnPowerUp();
-            }
-            else {
-                mSpawnUtil.spawnPowerDown();
-            }
-            mScore = mScore + 1; // Increment the score
-            mSP.play(mEat_ID, 1, 1, 0, 0, 1); // Play a sound
-        }
-
-        // Check if the head consumed a golden apple
-        if(mSnake != null && mGoldenApple != null) {
-            if(mSnake.checkDinner(mGoldenApple.getLocation())) {
+        if (mGoldenApple != null && mSnake.checkDinner(mGoldenApple.getLocation())) {
+            if (SpawnUtil.shouldSpawnPowerUp()) {
                 mSnake.applySpeedBoost(2, BOOST_DURATION);
-                // Determine whether to spawn a power-up or apple
-                if(mPowerUps != null) {
-                    if(SpawnUtil.shouldSpawnPowerUp()) {
-                        mSpawnUtil.spawnPowerUp();
-                    }
-                    else if(SpawnUtil.shouldSpawnPowerDown()) {
-                        mSpawnUtil.spawnPowerDown();
-                    }
-                    else {
-                        mSpawnUtil.spawnApple();
-                    }
-                }
-                else {
-                    Log.e("SnakeGame", "mPowerUps is null");
-                }
+            } else if (SpawnUtil.shouldSpawnPowerDown()) {
+                mSnake.applySpeedDecrease(0, BOOST_DURATION);
             }
-            if(mSnake.checkDinner(mPoisonApple.getLocation())) {
-                mSnake.applySpeedDecrease(0.5, BOOST_DURATION);
-                // Determine whether to spawn a power-up or apple
-                if(mPowerUps != null) {
-                    if(SpawnUtil.shouldSpawnPowerUp()) {
-                        mSpawnUtil.spawnPowerUp();
-                    }
-                    else if(SpawnUtil.shouldSpawnPowerDown()) {
-                        mSpawnUtil.spawnPowerDown();
-                    }
-                    else {
-                        mSpawnUtil.spawnApple();
-                    }
-                }
-                else {
-                    Log.e("SnakeGame", "mPowerUps is null");
-                }
+            spawnAppleOrPowerUp();
+        }
+        if (mPoisonApple != null && mSnake.checkDinner(mPoisonApple.getLocation())) {
+            if (SpawnUtil.shouldSpawnPowerUp()) {
+                mSnake.applySpeedBoost(2, BOOST_DURATION);
+            } else if (SpawnUtil.shouldSpawnPowerDown()) {
+                mSnake.applySpeedDecrease(0, BOOST_DURATION);
             }
+            spawnAppleOrPowerUp();
         }
         if (mApple.needsRespawn()) {
             mApple.spawn();
+        }
+    }
+
+    private void spawnAppleOrPowerUp() {
+        if(SpawnUtil.shouldSpawnApple()) {
+            mSpawnUtil.spawnApple();
+        }
+        else if(SpawnUtil.shouldSpawnPowerUp()) {
+            mSpawnUtil.spawnPowerUp();
+        }
+        else {
+            mSpawnUtil.spawnPowerDown();
         }
     }
 
