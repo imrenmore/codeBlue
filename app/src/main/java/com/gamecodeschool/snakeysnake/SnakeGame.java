@@ -10,6 +10,12 @@ import android.media.SoundPool;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 
 // added these for pause button
 import android.graphics.Bitmap;
@@ -20,7 +26,7 @@ import android.graphics.Typeface;
 
 // added this for debug and errors
 import android.util.Log;
-import java.io.IOException;
+
 import java.util.ArrayList;
 
 //Interfaces
@@ -59,6 +65,7 @@ class SnakeGame extends SurfaceView implements Runnable {
     private int mNumBlocksHigh;
 
     private int mScore;
+    private int highscore = 0;
 
     // Objects for drawing
     private Canvas mCanvas;
@@ -93,14 +100,18 @@ class SnakeGame extends SurfaceView implements Runnable {
         int height = 1200;
         public Background(Context context) {
             mBitmapBackground = BitmapFactory.decodeResource(getResources(), R.drawable.minecraftbackground);
-            mBitmapBackground = Bitmap.createScaledBitmap(mBitmapBackground, width, height ,false);
+            mBitmapBackground = Bitmap.createScaledBitmap(mBitmapBackground, width, height, false);
         }
         public void draw(Canvas canvas){
             canvas.drawBitmap(mBitmapBackground, 0,0, null);
         }
     }
-    public SnakeGame(Context context, Point size)  {
+
+    // This is the constructor method that gets called
+    // from com.gamecodeschool.snakeysnake.SnakeActivity
+    public SnakeGame(Context context, Point size) {
         super(context);
+        initGame();
 
         // Initializes the drawing objects
         initializeDrawingTools();
@@ -239,7 +250,7 @@ class SnakeGame extends SurfaceView implements Runnable {
     // Check to see if it is time for an update
     public boolean updateRequired() {
         // Are we due to update the frame
-        if(mNextFrameTime <= System.currentTimeMillis()){
+        if(mNextFrameTime <= System.currentTimeMillis()) {
             // Tenth of a second has passed
             // Setup when the next update will be triggered
             mNextFrameTime =System.currentTimeMillis() + MILLIS_PER_SECOND / TARGET_FPS;
@@ -272,8 +283,7 @@ class SnakeGame extends SurfaceView implements Runnable {
             for(PowerUp powerUp : mPowerUps) {
                 powerUp.applyEffect(mSnake);
             }
-        }
-        else {
+        } else {
             Log.e("SnakeGame", "mPowerUps is null");
         }
     }
@@ -331,9 +341,10 @@ class SnakeGame extends SurfaceView implements Runnable {
         if (mWall.checkCollision(mSnake.getLocation())) {
             //pause the game if collision is detected.
             mPaused = true;
+            checkScore();
         }
         // Did the head of the snake eat the apple?
-        if(mSnake.checkDinner(mApple.getLocation())){
+        if (mSnake.checkDinner(mApple.getLocation())) {
             long currTime = System.currentTimeMillis();
             long elapsedTime = currTime - lastSpawnTime;
 
@@ -363,7 +374,8 @@ class SnakeGame extends SurfaceView implements Runnable {
             //ends the game ready to restart
             mSP.play(mCrashID, 1, 1, 0, 0, 1);
             newGame();
-            mPaused =true;
+            mPaused = true;
+            checkScore();
         }
     }
 
@@ -390,6 +402,11 @@ class SnakeGame extends SurfaceView implements Runnable {
                 drawPausedText();
             } else {
                 drawScore();
+                checkScore();
+            }
+            if (highscore == 0) {
+                //init highscore
+                highscore = Integer.parseInt(getHighscoreValue());
             }
 
             // Draw the pause button and the name text on the screen
@@ -402,13 +419,11 @@ class SnakeGame extends SurfaceView implements Runnable {
             //check if an apple was eaten
             if (mSnake.checkDinner(mApple.getLocation())) {
 
-                if(SpawnUtil.shouldSpawnPowerUp()) {
+                if (SpawnUtil.shouldSpawnPowerUp()) {
                     mSpawnUtil.spawnPowerUp();
-                }
-                else if(SpawnUtil.shouldSpawnPowerDown()) {
+                } else if (SpawnUtil.shouldSpawnPowerDown()) {
                     mSpawnUtil.spawnPowerDown();
-                }
-                else {
+                } else {
                     //Spawn another apple
                     mSpawnUtil.spawnApple();
                 }
@@ -432,8 +447,8 @@ class SnakeGame extends SurfaceView implements Runnable {
         mPaint.setColor(Color.argb(255, 255, 255, 255));
         mPaint.setTextSize(120);
         mCanvas.drawText("" + mScore, 20, 120, mPaint);
+        mCanvas.drawText("Highscore: " + highscore, 20, 250, mPaint);
     }
-
     //Draws player's final score
     public void drawFinal(Canvas canvas, Paint paint) {
         Paint finalPaint = new Paint(paint);
@@ -444,7 +459,7 @@ class SnakeGame extends SurfaceView implements Runnable {
         finalPaint.setTextAlign(Paint.Align.CENTER);
         float x = (float) canvas.getWidth() / 2;
         float y = (float) canvas.getHeight() / 2 - finalPaint.descent() - 180;
-        canvas.drawText(score, x , y, finalPaint );
+        canvas.drawText(score, x, y, finalPaint);
     }
 
     // Displays a "Paused" message overlay when the game is paused
@@ -563,4 +578,63 @@ class SnakeGame extends SurfaceView implements Runnable {
         mThread = new Thread(this);
         mThread.start();
     }
+
+    public String getHighscoreValue() {
+        //read file to read name
+        FileReader readFile = null;
+        BufferedReader reader = null;
+        try {
+            readFile = new FileReader("highscore.dat");
+            reader = new BufferedReader(readFile);
+            return reader.readLine();
+        } catch (IOException e) {
+            return "0";
+        } finally {
+            try {
+                if (reader != null) {
+                    reader.close();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private void initGame() {
+        loadHighScore();
+
+    }
+    public void checkScore() {
+        if (mScore > highscore) {
+            highscore = mScore;
+            saveHighScore();
+        }
+    }
+
+    private void loadHighScore() {
+        File scoreFile = new File(getContext().getFilesDir(), "highscore.dat");
+        if (!scoreFile.exists()) {
+            highscore = 0;
+            return;
+        }
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(scoreFile))) {
+            highscore = Integer.parseInt(reader.readLine());
+        } catch (IOException e) {
+            Log.e("SnakeGame", "Error reading high score file", e);
+            highscore = 0;
+        }
+    }
+
+    // Saves high score to a file
+    private void saveHighScore() {
+        File scoreFile = new File(getContext().getFilesDir(), "highscore.dat");
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(scoreFile, false))) {
+            writer.write(String.valueOf(highscore));
+        } catch (IOException e) {
+            Log.e("SnakeGame", "Error saving high score", e);
+        }
+    }
 }
+
+
