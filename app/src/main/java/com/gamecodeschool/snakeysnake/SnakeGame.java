@@ -60,6 +60,9 @@ class SnakeGame extends SurfaceView implements Runnable {
     private int mEat_ID = -1;
     private int mCrashID = -1;
 
+    private int mEdgeCollisionID = -1;
+
+
     // The size in segments of the playable area
     private static int NUM_BLOCKS_WIDE = 40;
     private int mNumBlocksHigh;
@@ -192,6 +195,7 @@ class SnakeGame extends SurfaceView implements Runnable {
             AssetManager assetManager = context.getAssets();
             mEat_ID = mSP.load(assetManager.openFd("eating_sound.ogg"), 0);
             mCrashID = mSP.load(assetManager.openFd("Minecraft_Music.ogg"), 0);
+            mEdgeCollisionID = mSP.load(assetManager.openFd("Minecraft_death.ogg"), 0);
         } catch (IOException e) {
             Log.e("SnakeGame", "Error loading sound files", e);
         }
@@ -325,12 +329,27 @@ class SnakeGame extends SurfaceView implements Runnable {
     }
 
     //Did the snake die?
+//    private void checkSnakeDeath() {
+//        if (mSnake.detectDeath(mWall)) {
+//            // Pause the game ready to start again
+//            mSP.play(mCrashID, 1, 1, 0, 0, 1);
+//            mPaused = true;
+//        }
+//    }
     private void checkSnakeDeath() {
-        if (mSnake.detectDeath(mWall)) {
-            // Pause the game ready to start again
-            mSP.play(mCrashID, 1, 1, 0, 0, 1);
+        // Check for collision with wall or edge
+        if (mSnake.detectDeath(mWall) || isEdgeCollision(mSnake.getLocation())) {
+            mSP.play(mEdgeCollisionID, 1, 1, 0, 0, 1);
             mPaused = true;
+            mScore = 0;
+            newGame();
         }
+    }
+
+    // Check if the snake's head collides with the edge of the game area
+    private boolean isEdgeCollision(Point snakeHead) {
+        return snakeHead.x <= 0 || snakeHead.x >= NUM_BLOCKS_WIDE - 1 ||
+                snakeHead.y <= 0 || snakeHead.y >= mNumBlocksHigh - 1;
     }
 
     // Update all the game objects
