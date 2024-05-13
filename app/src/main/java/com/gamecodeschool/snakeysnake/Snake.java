@@ -203,7 +203,7 @@ class Snake extends MainObject {
     }
 
     public void applySpeedDecrease(int steps, int boostDuration) {
-        isBoosted = false;
+        isSlowed = true;
         speedBoostLength = System.currentTimeMillis() + boostDuration;
         move(steps);
     }
@@ -221,7 +221,7 @@ class Snake extends MainObject {
     }
 
     //Helper method to perform movement
-    private void moveSteps(double steps) {
+    private void moveSteps(int steps) {
          // Move the body segments, from the back to the position of the segment in front
         for (int i = segmentLocations.size() - 1; i > 0; i--) {
             // Make it the same value as the next segment going forwards towards the head
@@ -235,16 +235,16 @@ class Snake extends MainObject {
         // Move it appropriately
         switch (heading) {
             case UP:
-                p.y--;
+                p.y -= steps;
                 break;
             case RIGHT:
-                p.x++;
+                p.x += steps;
                 break;
             case DOWN:
-                p.y++;
+                p.y += steps;
                 break;
             case LEFT:
-                p.x--;
+                p.x -= steps;
                 break;
         }
     }
