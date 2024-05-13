@@ -100,6 +100,7 @@ class SnakeGame extends SurfaceView implements Runnable {
     private final long MILLIS_PER_SECOND = 1000;
     private Background background;
     private ArrayList<PowerUp> mPowerUps;
+
     private static final int BOOST_DURATION = 10000; //10 seconds
 
     private Wall mWall;
@@ -321,6 +322,7 @@ class SnakeGame extends SurfaceView implements Runnable {
     private void updatePowerUps() {
         if (mPowerUps != null) {
             for (PowerUp powerUp : mPowerUps) {
+                powerUp.getType();
                 powerUp.applyEffect(mSnake);
             }
         } else {
