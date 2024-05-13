@@ -266,6 +266,10 @@ class Snake extends MainObject {
             dead = true;
             gameOver = true;
         }
+        if(dead) {
+            gameOver = true;
+        }
+
 
         return dead;
     }
