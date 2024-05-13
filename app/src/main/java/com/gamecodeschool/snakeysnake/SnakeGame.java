@@ -152,7 +152,7 @@ class SnakeGame extends SurfaceView implements Runnable {
         initializeDrawingTools();
         background = new Background(context);
         // Loads and sets the custom font
-        setFont("Catfiles.otf");
+        setFont("minecraftfont.otf");
 
         // Calculates the size of each block based on the screen size
         int blockSize = calculateBlockSize(size);

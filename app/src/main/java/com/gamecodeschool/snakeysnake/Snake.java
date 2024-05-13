@@ -84,20 +84,20 @@ class Snake extends MainObject {
         // Create and scale the bitmaps
         mBitmapHeadRight = BitmapFactory
                 .decodeResource(context.getResources(),
-                        R.drawable.alihead);
+                        R.drawable.head);
 
         // Create 3 more versions of the head for different headings
         mBitmapHeadLeft = BitmapFactory
                 .decodeResource(context.getResources(),
-                        R.drawable.alihead);
+                        R.drawable.head);
 
         mBitmapHeadUp = BitmapFactory
                 .decodeResource(context.getResources(),
-                        R.drawable.alihead);
+                        R.drawable.head);
 
         mBitmapHeadDown = BitmapFactory
                 .decodeResource(context.getResources(),
-                        R.drawable.alihead);
+                        R.drawable.head);
 
         // Modify the bitmaps to face the snake head
         // in the correct direction
