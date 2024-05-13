@@ -441,7 +441,6 @@ class SnakeGame extends SurfaceView implements Runnable {
 
     // Do all the drawing
     public void draw() {
-
         try {
             // Check if the surface is valid before drawing
             if (mSurfaceHolder.getSurface().isValid()) {
@@ -456,8 +455,6 @@ class SnakeGame extends SurfaceView implements Runnable {
                     } else {
                         // Draw the game's background
                         drawBackground();
-//            // Draw the current score
-//            drawScore();
                         // Draw the apple and snake
                         mApple.draw(mCanvas, mPaint);
                         //draws wall
@@ -481,7 +478,6 @@ class SnakeGame extends SurfaceView implements Runnable {
                         drawPauseButton();
                         drawNames("Kiranjot, Imren, Marilyn, Savannah <3");
                     }
-
                     mSurfaceHolder.unlockCanvasAndPost(mCanvas);
                 }
             }
@@ -489,10 +485,8 @@ class SnakeGame extends SurfaceView implements Runnable {
             Log.e("SnakeGame", "Exception in draw method", e);
         }
 
-
         //check if an apple was eaten
                     if (mSnake.checkDinner(mApple.getLocation())) {
-
                         if (SpawnUtil.shouldSpawnPowerUp()) {
                             mSpawnUtil.spawnPowerUp();
                         } else if (SpawnUtil.shouldSpawnPowerDown()) {
@@ -501,16 +495,12 @@ class SnakeGame extends SurfaceView implements Runnable {
                             //Spawn another apple
                             mSpawnUtil.spawnApple();
                         }
-
-
                         //increase the score
                         appleEaten(mApple);
-
                         //play a sound
                         mSP.play(mEat_ID, 1, 1, 0, 0, 1);
                     }
                 }
-
     // Draws the background image
     private void drawBackground() {
         background.draw(mCanvas);
@@ -728,7 +718,6 @@ class SnakeGame extends SurfaceView implements Runnable {
         }
     }
 
-
     public void checkScore() {
         if (mScore > highscore) {
             highscore = mScore;
@@ -783,7 +772,6 @@ class SnakeGame extends SurfaceView implements Runnable {
         int y = canvas.getHeight() / 2;
         canvas.drawText("CSC 133 Minecraft Java Edition", x-900, y, paint);
         canvas.drawText("Tap to Start our Game!", x-600, y+100, paint);    }
-
 }
 
 
