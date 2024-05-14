@@ -573,7 +573,6 @@ class SnakeGame extends SurfaceView implements Runnable {
     public void setFont(String fontFileName) {
         Typeface typeface = Typeface.createFromAsset(getContext().getAssets(), "fonts/" + fontFileName);
         mPaint.setTypeface(typeface);
-
     }
 
     private void togglePause() {
