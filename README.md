@@ -8,5 +8,6 @@ The following features are implemented:
 - [x] New UI theme (Minecraft!)
 - [x] Obstacles
 - [x] New sound features
-- [x] Speedup/slow down
+- [x] Good and bad apples
 - [x] Game Over Screen
+- [x] Homescreen
