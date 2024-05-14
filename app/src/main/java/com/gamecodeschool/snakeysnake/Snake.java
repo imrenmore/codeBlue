@@ -66,6 +66,7 @@ class Snake extends MainObject {
     private Bitmap mBitmapBody;
 
     private boolean isBoosted = false; //is the snake currently sped up?
+    private boolean isSlowed = false; //is the snake currently slowed
     private long speedBoostLength = 0; //how long the speed boost lasts
     private boolean gameOver = false;
     private SnakeGame mSnakeGame;
@@ -190,26 +191,38 @@ class Snake extends MainObject {
 
     //method to activate speed decrease
     void activateSpeedDecrease(long duration) {
-         isBoosted = false;
-         mSnakeGame.update(0.5);
+         isSlowed = true;
+         mSnakeGame.update(0);
          speedBoostLength = System.currentTimeMillis() + duration;
+    }
+
+    public void applySpeedBoost(int steps, int boostDuration) {
+        isBoosted = true;
+        speedBoostLength = System.currentTimeMillis() + boostDuration;
+        move(steps);
+    }
+
+    public void applySpeedDecrease(int steps, int boostDuration) {
+        isSlowed = true;
+        speedBoostLength = System.currentTimeMillis() + boostDuration;
+        move(steps);
     }
 
     @Override
     public void move() {
-        move(1); // Call move(int steps) with a default step of 1
+        move(1); // Call move(double steps) with a default step of 1
     }
 
     // Overloaded move method to move multiple steps
-    void move(double steps) {
+    void move(int steps) {
         for (int i = 0; i < steps; i++) {
-            moveSingleStep();
+            moveSteps(steps);
         }
     }
 
     //Helper method to perform movement
-    private void moveSingleStep() {
-        // Move the body segments, from the back to the position of the segment in front
+    private void moveSteps(int steps) {
+         // Move the body segments, from the back to the position of the segment in front
         for (int i = segmentLocations.size() - 1; i > 0; i--) {
             // Make it the same value as the next segment going forwards towards the head
             segmentLocations.get(i).x = segmentLocations.get(i - 1).x;
@@ -222,37 +235,24 @@ class Snake extends MainObject {
         // Move it appropriately
         switch (heading) {
             case UP:
-                p.y--;
+                p.y -= steps;
                 break;
             case RIGHT:
-                p.x++;
+                p.x += steps;
                 break;
             case DOWN:
-                p.y++;
+                p.y += steps;
                 break;
             case LEFT:
-                p.x--;
+                p.x -= steps;
                 break;
         }
     }
-    public void applySpeedBoost(double steps, int boostDuration) {
-         isBoosted = true;
-         speedBoostLength = System.currentTimeMillis() + boostDuration;
-         move(steps);
-    }
 
-    public void applySpeedDecrease(double steps, int boostDuration) {
-        isBoosted = false;
-        speedBoostLength = System.currentTimeMillis() + boostDuration;
-        move(steps);
-    }
-
-        boolean detectDeath(Wall mWall) {
-            Point head = segmentLocations.get(0);
-
+    boolean detectDeath(Wall mWall) {
+         Point head = segmentLocations.get(0);
         // Check boundary collision
         boolean dead = head.x == -1 || head.x > mMoveRange.x || head.y == -1 || head.y > mMoveRange.y;
-
         // Check self-collision
         for (int i = segmentLocations.size() - 1; i > 0; i--) {
             if (head.equals(segmentLocations.get(i))) {
@@ -282,7 +282,6 @@ class Snake extends MainObject {
 
     @Override
     public void draw(Canvas canvas, Paint paint) {
-
         // Don't run this code if ArrayList has nothing in it
         if (!segmentLocations.isEmpty()) {
             // All the code from this method goes here
@@ -361,12 +360,13 @@ class Snake extends MainObject {
         return segmentLocations.get(0);
     }
 
-    // Overloaded switchHeading method to change heading directly
-    void switchHeading(Heading newHeading) {
-        // Check if the new heading is not opposite to the current one
-        if (Math.abs(newHeading.ordinal() - heading.ordinal()) % 2 != 0) {
-            heading = newHeading;
-        }
+    //getter for isBoosted
+    public boolean isBoosted() {
+         return isBoosted;
+    }
+    //getter for isSlowed
+    public boolean isSlowed() {
+         return isSlowed;
     }
 
     // Handle changing direction

@@ -13,17 +13,11 @@ import java.util.Random;
 
 class Apple extends MainObject {
     private SnakeGame mSnakeGame;
-
-    // The location of the apple on the grid
-    // Not in pixels
     private Point location = new Point();
-
-    // The range of values we can choose from
-    // to spawn an apple
     private final Point mSpawnRange;
     private final int mSize;
 
-    // An image to represent the apple
+    // Apple representations
     private Bitmap mBitmap;
     private Bitmap mBitmapApple;
     private Bitmap mGoldenApple;
@@ -49,22 +43,29 @@ class Apple extends MainObject {
     }
 
     private void intializeBitmap(Context context, int s) {
-        // Load the image to the bitmap
         // Create the default bitmap object
         mBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.apple);
         mBitmap = Bitmap.createScaledBitmap(mBitmap, s, s, false);
 
+        // Create bitmaps for Apples
         mBitmapApple = BitmapFactory.decodeResource(context.getResources(), R.drawable.apple);
-        // Resize the bitmap
         mBitmapApple = Bitmap.createScaledBitmap(mBitmapApple, s, s, false);
-        // Load image to the bitmap
         mGoldenApple = BitmapFactory.decodeResource(context.getResources(),R.drawable.golden_apple);
-        // Resize the bitmap
         mGoldenApple = Bitmap.createScaledBitmap(mGoldenApple, s, s, false);
-        // Load image to the bitmap
         mPoisonApple = BitmapFactory.decodeResource(context.getResources(),R.drawable.poison_apple);
-        // Resize the bitmap
         mPoisonApple = Bitmap.createScaledBitmap(mPoisonApple, s, s, false);
+    }
+
+    public int getScoreMultiplier() {
+        if(isGoldenApple()) {
+            return 2; // Receive 2 points if Golden Apple
+        }
+        else if(isPoisonApple()) {
+            return 0; // Receive no points if Poison Apple
+        }
+        else {
+            return 1; // Default gives 1
+        }
     }
 
     // This is called every time a normal apple is eaten
@@ -109,8 +110,33 @@ class Apple extends MainObject {
         return (currentTime - spawnTime > MAX_TIME);
     }
 
+    // Draw the apple
+    @Override
+    public void draw(Canvas canvas, Paint paint) {
+        canvas.drawBitmap(mBitmap, location.x * mSize, location.y * mSize, paint);
+    }
+
+    // Check if the apple that spawned is golden
+    private boolean isGoldenApple() {
+        if(mSnakeGame != null) {
+            return SpawnUtil.shouldSpawnPowerUp();
+        }
+        else {
+            return false;
+        }
+    }
+
+    // Check if the apple that spawned is poison
+    private boolean isPoisonApple() {
+        if(mSnakeGame != null) {
+            return SpawnUtil.shouldSpawnPowerDown();
+        }
+        else {
+            return false;
+        }
+    }
+
     // Let SnakeGame know where the apple is
-    // SnakeGame can share this with the snake
     @Override
     public Point getLocation() {
         return location;
@@ -119,37 +145,6 @@ class Apple extends MainObject {
     public void setLocation(Point location){
         this.location = location;
     }
-
-    // Draw the apple
-    @Override
-    public void draw(Canvas canvas, Paint paint) {
-        canvas.drawBitmap(mBitmap, location.x * mSize, location.y * mSize, paint);
-    }
-
-    //check if the apple that spawned is golden
-    private boolean isGoldenApple() {
-        if(mSnakeGame != null) {
-            boolean shouldSpawn = SpawnUtil.shouldSpawnPowerUp();
-            Log.d("Apple","Should spawn golden apple: " + shouldSpawn);
-            return shouldSpawn;
-        }
-        else {
-            Log.e("Apple", "SnakeGame object is null");
-            return false;
-        }
-    }
-    private boolean isPoisonApple() {
-        if(mSnakeGame != null) {
-            boolean shouldSpawn = SpawnUtil.shouldSpawnPowerDown();
-            Log.d("Apple", "Should spawn poison apple: " + shouldSpawn);
-            return shouldSpawn;
-        }
-        else {
-            Log.e("Apple","SnakeGame object is null");
-            return false;
-        }
-    }
-
     @Override
     public int getWidth() {
         return 0;
@@ -170,5 +165,4 @@ class Apple extends MainObject {
     public void move() {
         // No movement for Apple
     }
-
 }
