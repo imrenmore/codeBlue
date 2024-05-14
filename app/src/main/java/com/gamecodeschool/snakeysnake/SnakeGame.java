@@ -622,7 +622,6 @@ class SnakeGame extends SurfaceView implements Runnable {
                     return true;
                 }
 
-                // Let the com.gamecodeschool.snakeysnake.Snake class handle the input
                 if (!mPaused) {
                     mSnake.switchHeading(motionEvent);
                 }
